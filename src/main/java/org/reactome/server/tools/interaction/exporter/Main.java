@@ -14,6 +14,7 @@ public class Main {
 					.setOutput(os)
 					.setSpecies("Homo sapiens")
 					.setIncludeSimpleEntity(IncludeSimpleEntity.NON_TRIVIAL)
+					.setMaxSetSize(4)
 					.setFormat(Format.TSV));
 		} catch (IOException e) {
 			e.printStackTrace();
