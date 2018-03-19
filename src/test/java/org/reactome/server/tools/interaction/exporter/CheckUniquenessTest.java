@@ -1,5 +1,6 @@
 package org.reactome.server.tools.interaction.exporter;
 
+import jdk.nashorn.internal.ir.annotations.Ignore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,7 @@ class CheckUniquenessTest {
 
 	@Test
 	void testUniqueness() {
+
 		final Set<String> hashes = new HashSet<>();
 		try (BufferedReader reader = new BufferedReader(new FileReader("output.txt"))) {
 			long[] line = new long[]{0};
@@ -27,6 +29,29 @@ class CheckUniquenessTest {
 				final String a = row[1].split(":")[1];
 				final String b = row[2].split(":")[1];
 				if (a.compareTo(b) < 0) hashCode += a + b;
+				else hashCode += b + a;
+				if (hashes.contains(hashCode))
+					Assertions.fail(line[0] + " " + s);
+				hashes.add(hashCode);
+				line[0]++;
+			});
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Ignore
+	void testHisUniqueness() {
+		final File standard = new File("/home/pascual/proyectos/reactome/psicquic/stids.txt");
+		final Set<String> hashes = new HashSet<>();
+		try (BufferedReader reader = new BufferedReader(new FileReader(standard))) {
+			long[] line = new long[]{0};
+			reader.lines().forEach(s -> {
+				final String[] row = s.split("\t");
+				String hashCode = row[0];
+				final String a = row[2];
+				final String b = row[4];
+				if (a.compareTo(b) > 0) hashCode += a + b;
 				else hashCode += b + a;
 				if (hashes.contains(hashCode))
 					Assertions.fail(line[0] + " " + s);
@@ -78,8 +103,8 @@ class CheckUniquenessTest {
 							matches.incrementAndGet();
 							standardLines.remove(code);
 						} else {
-							if (s.incrementAndGet() < 5)
-								System.out.println(code);
+							if (s.incrementAndGet() < 15)
+								System.out.println(code.replaceAll("(\\d)R", "$1 R"));
 						}
 						total.getAndIncrement();
 					});

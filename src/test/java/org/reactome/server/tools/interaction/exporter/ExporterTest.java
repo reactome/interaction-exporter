@@ -6,7 +6,8 @@ import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 
-import java.util.*;
+import java.util.Map;
+import java.util.TreeMap;
 
 class ExporterTest {
 
@@ -24,22 +25,21 @@ class ExporterTest {
 
 		String stId = "R-HSA-5672710";
 		final DatabaseObject object = OBJECT_SERVICE.findById(stId);
-		expand(object, 1, 0, null);
+		expand(object, 1, 0, "");
 		System.out.println();
 		InteractionExporter.export(exporter -> exporter
 				.setOutput(System.out)
 				.setFormat(Format.TSV)
+				.setMaxSetSize(4)
 				.setObject(stId));
 	}
 
 	private void expand(DatabaseObject entity, int stoichiometry, int level, String prefix) {
-		final Map<PhysicalEntity, Integer> childs = participants(collect(entity));
+		final Map<String, Map<PhysicalEntity, Integer>> children = participants(entity);
 		for (int i = 0; i < level; i++) System.out.print("|    ");
-		if (prefix == null || !childs.isEmpty())
-			prefix = childs.isEmpty() ? "-" : "+";
+		if (prefix.isEmpty()) prefix = children.isEmpty() ? "-" : "+";
 		System.out.println(String.format(format, prefix, simpleSchemaClass(entity), entity.getStId(), stoichiometry));
-		final String nextPrefix = entity instanceof EntitySet ? "o" : null;
-		childs.forEach((child, s) -> expand(child, s, level + 1, nextPrefix));
+		children.forEach((rol, map) -> map.forEach((child, s) -> expand(child, s, level + 1, rol)));
 	}
 
 	private String simpleSchemaClass(DatabaseObject entity) {
@@ -48,40 +48,46 @@ class ExporterTest {
 		return entity.getSchemaClass();
 	}
 
-	private Map<PhysicalEntity, Integer> participants(Collection<PhysicalEntity> entities) {
-		final Map<PhysicalEntity, Integer> participants = new TreeMap<>();
-		entities.forEach(physicalEntity -> participants.put(physicalEntity, participants.getOrDefault(physicalEntity, 0) + 1));
+	private Map<String, Map<PhysicalEntity, Integer>> participants(DatabaseObject object) {
+		final Map<String, Map<PhysicalEntity, Integer>> participants = new TreeMap<>();
+		if (object instanceof Complex) {
+			final Complex complex = (Complex) object;
+			if (complex.getHasComponent() != null) {
+				final Map<PhysicalEntity, Integer> map = participants.computeIfAbsent("", k -> new TreeMap<>());
+				complex.getHasComponent().forEach(entity -> map.put(entity, map.getOrDefault(entity, 0) + 1));
+			}
+		} else if (object instanceof EntitySet) {
+			final EntitySet set = (EntitySet) object;
+			if (set.getHasMember() != null) {
+				final Map<PhysicalEntity, Integer> map = participants.computeIfAbsent("o", k -> new TreeMap<>());
+				set.getHasMember().forEach(entity -> map.put(entity, map.getOrDefault(entity, 0) + 1));
+			}
+		} else if (object instanceof Polymer) {
+			final Polymer polymer = (Polymer) object;
+			if (polymer.getRepeatedUnit() != null) {
+				final Map<PhysicalEntity, Integer> map = participants.computeIfAbsent("-", k -> new TreeMap<>());
+				polymer.getRepeatedUnit().forEach(entity -> map.put(entity, map.getOrDefault(entity, 0) + 1));
+			}
+		} else if (object instanceof ReactionLikeEvent) {
+			final ReactionLikeEvent reaction = (ReactionLikeEvent) object;
+			if (reaction.getInput() != null) {
+				final Map<PhysicalEntity, Integer> map = participants.computeIfAbsent("i", k -> new TreeMap<>());
+				reaction.getInput().forEach(entity -> map.put(entity, map.getOrDefault(entity, 0) + 1));
+			}
+			if (reaction.getCatalystActivity() != null) {
+				final Map<PhysicalEntity, Integer> map = participants.computeIfAbsent("c", k -> new TreeMap<>());
+				for (CatalystActivity activity : reaction.getCatalystActivity()) {
+					final Map<PhysicalEntity, Integer> active = participants.computeIfAbsent("a", k -> new TreeMap<>());
+					if (activity.getActiveUnit() != null)
+						activity.getActiveUnit().forEach(activeUnit -> active.put(activeUnit, map.getOrDefault(activeUnit, 0) + 1));
+					map.put(activity.getPhysicalEntity(), map.getOrDefault(activity.getPhysicalEntity(), 0) + 1);
+
+				}
+			}
+		}
+
 		return participants;
 	}
 
 
-	private Collection<PhysicalEntity> collect(DatabaseObject object) {
-		if (object instanceof Complex) {
-			final Complex complex = (Complex) object;
-			if (complex.getHasComponent() != null)
-				return complex.getHasComponent();
-		} else if (object instanceof EntitySet) {
-			final EntitySet set = (EntitySet) object;
-			if (set.getHasMember() != null)
-				return set.getHasMember();
-		} else if (object instanceof Polymer) {
-			final Polymer polymer = (Polymer) object;
-			if (polymer.getRepeatedUnit() != null)
-				return polymer.getRepeatedUnit();
-		} else if (object instanceof ReactionLikeEvent) {
-			final ReactionLikeEvent reaction = (ReactionLikeEvent) object;
-			final List<PhysicalEntity> objects = new LinkedList<>();
-			if (reaction.getInput() != null)
-				objects.addAll(reaction.getInput());
-			if (reaction.getCatalystActivity() != null)
-				for (CatalystActivity activity : reaction.getCatalystActivity()) {
-					objects.add(activity.getPhysicalEntity());
-					if (activity.getActiveUnit() != null)
-						objects.addAll(activity.getActiveUnit());
-				}
-
-			return objects;
-		}
-		return Collections.emptyList();
-	}
 }

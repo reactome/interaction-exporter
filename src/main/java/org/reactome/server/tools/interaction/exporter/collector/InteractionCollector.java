@@ -36,6 +36,7 @@ public class InteractionCollector {
 		final ProgressBar bar = new ProgressBar();
 		int i = 1;
 		for (DatabaseObject object : objects) {
+			interactions = new TreeSet<>();
 			explore(object, object);
 			final String progress = String.format("%d/%d %s:%s", i, objects.size(), object.getSchemaClass(), object.getStId());
 			bar.setProgress((double) i / objects.size(), progress);
@@ -87,30 +88,84 @@ public class InteractionCollector {
 
 	private void exploreReaction(DatabaseObject context, ReactionLikeEvent reaction) {
 		if (reaction.getInput() != null) {
-			final Map<PhysicalEntity, Integer> participants = participants(reaction.getInput());
-			final ArrayList<PhysicalEntity> components = new ArrayList<>(participants.keySet());
-			if (importantParticipants(participants) > maxSetSize) return;
+			final Map<PhysicalEntity, Integer> inputs = participants(reaction.getInput());
+			if (importantParticipants(inputs) > maxSetSize) return;
+			// Input as complex
+			final ArrayList<PhysicalEntity> components = new ArrayList<>(inputs.keySet());
 			for (int i = 0; i < components.size(); i++)
 				for (int j = i + 1; j < components.size(); j++)
-					addInteraction(context, "physical", components.get(i), participants.get(components.get(i)), components.get(j), participants.get(components.get(i)));
-			// Oligomers
-			participants.forEach((entity, stoichiometry) -> {
-				if (stoichiometry > 1)
-					addInteraction(context, "physical", entity, stoichiometry, entity, 0);
-			});
-			// Catalyses
-			if (reaction.getCatalystActivity() != null)
-				reaction.getCatalystActivity().forEach(catalystActivity -> {
-					participants.forEach((participant, stoichiometry) ->
-							addInteraction(context, "enzymatic", catalystActivity.getPhysicalEntity(), 0, participant, stoichiometry));
-					if (catalystActivity.getActiveUnit() != null) {
-						participants.forEach((participant, stoichiometry) ->
-								catalystActivity.getActiveUnit().forEach(physicalEntity ->
-										addInteraction(context, "physical", physicalEntity, 0, participant, stoichiometry)));
-					}
-				});
+					addInteraction(context, "physical", components.get(i), inputs.get(components.get(i)), components.get(j), inputs.get(components.get(i)));
 			components.forEach(entity -> explore(context, entity));
+			// Oligomers
+			inputs.forEach((input, stoichiometry) -> {
+				if (stoichiometry > 1)
+					addInteraction(context, "physical", input, stoichiometry, input, 0);
+			});
+			// Catalyst
+			addCatalystInteractions(context, reaction, inputs);
+
 		}
+	}
+
+	private void addCatalystInteractions(DatabaseObject context, ReactionLikeEvent reaction, Map<PhysicalEntity, Integer> inputs) {
+		if (reaction.getCatalystActivity() == null || reaction.getCatalystActivity().size() > 1)
+			return;
+		/* Conditions for the input:
+		 * EWAS | Complex | SimpleEntity | Other
+		 * -----|---------|--------------|--------
+		 *   1  |    0    |     any      |  0
+		 *   0  |    1    |     any      |  0
+		 *   0  |    0    |      1       |  0
+		 */
+		final List<PhysicalEntity> macro = new LinkedList<>();
+		final List<PhysicalEntity> small = new LinkedList<>();
+		final List<PhysicalEntity> other = new LinkedList<>();
+		inputs.forEach((input, integer) -> {
+			if (input instanceof SimpleEntity)
+				small.add(input);
+			else if (input instanceof Complex || input instanceof EntityWithAccessionedSequence)
+				macro.add(input);
+			else other.add(input);
+		});
+
+		final PhysicalEntity input = other.isEmpty()
+				? macro.size() == 1
+				? macro.get(0)
+				: macro.isEmpty() && small.size() == 1
+				? small.get(0)
+				: null
+				: null;
+
+		if (input == null) return;
+
+		/*
+		 * Conditions for the catalyst
+		 * 1 active unit ? active unit[0] : physical entity
+		 */
+		// Catalysts
+		final CatalystActivity catalystActivity = reaction.getCatalystActivity().get(0);
+		final PhysicalEntity catalyst = catalystActivity.getActiveUnit() != null && catalystActivity.getActiveUnit().size() == 1
+				? catalystActivity.getActiveUnit().iterator().next()
+				: catalystActivity.getPhysicalEntity();
+		addInteraction(context, "enzymatic", catalyst, 1, input, inputs.get(input));
+//		if (reaction.getCatalystActivity() != null)
+//			reaction.getCatalystActivity().forEach(catalystActivity -> {
+//				// Active unit []
+//				if (catalystActivity.getActiveUnit() != null && catalystActivity.getActiveUnit().size() == 1) {
+//					final PhysicalEntity catalyst = catalystActivity.getActiveUnit().iterator().next();
+//					addInteraction(context, "enzymatic", catalyst, 1, input, inputs.get(input));
+////					inputs.forEach((input, stoichiometry) ->
+////								catalystActivity.getActiveUnit().forEach(activeUnit ->
+////												addInteraction(context, "enzymatic", activeUnit, 1, input, stoichiometry)
+////							explore(context, physicalEntity);
+//					);
+//				} else {
+//					// Physical entity
+////					    explore(context, catalystActivity.getPhysicalEntity());
+//					inputs.forEach((participant, stoichiometry) ->
+//							addInteraction(context, "enzymatic", catalystActivity.getPhysicalEntity(), 0, participant, stoichiometry));
+//				}
+//			});
 	}
 
 	private void addInteraction(DatabaseObject context, String type, PhysicalEntity a, int as, PhysicalEntity b, int bs) {
@@ -119,33 +174,36 @@ public class InteractionCollector {
 			if (set.getHasMember() != null) {
 				final Map<PhysicalEntity, Integer> participants = participants(set.getHasMember());
 				if (type.equals("enzymatic") || importantParticipants(participants) <= maxSetSize)
-					participants.forEach((child, s) -> addInteraction(context, "physical", child, s, b, bs));
+					participants.forEach((child, s) -> addInteraction(context, type, child, s, b, bs));
 			}
 		} else if (b instanceof EntitySet) {
 			final EntitySet set = (EntitySet) b;
 			if (set.getHasMember() != null) {
 				final Map<PhysicalEntity, Integer> participants = participants(set.getHasMember());
 				if (importantParticipants(participants) <= maxSetSize)
-					participants.forEach((child, s) -> addInteraction(context, "physical", a, as, child, s));
+					participants.forEach((child, s) -> addInteraction(context, type, a, as, child, s));
 			}
 		} else if (a instanceof Complex) {
 			final Complex complex = (Complex) a;
-			if (complex.getHasComponent() != null) {
+			if (type.equals("enzymatic"))
+				writeInteraction(context, a, as, b, bs);
+			else if (complex.getHasComponent() != null) {
 				final Map<PhysicalEntity, Integer> participants = participants(complex.getHasComponent());
 				if (importantParticipants(participants) <= maxSetSize)
-					participants.forEach((child, s) -> addInteraction(context, "physical", child, s, b, bs));
+					participants.forEach((child, s) -> addInteraction(context, type, child, s, b, bs));
 			}
 			// Optional, write interactions of complexes
-			writeInteraction(context, a, as, b, bs);
+//			writeInteraction(context, a, as, b, bs);
 		} else if (b instanceof Complex) {
 			final Complex complex = (Complex) b;
-			if (complex.getHasComponent() != null) {
+			// Input complexes of a reaction are not expanded
+			if (type.equals("enzymatic"))
+				writeInteraction(context, a, as, b, bs);
+			else if (complex.getHasComponent() != null) {
 				final Map<PhysicalEntity, Integer> participants = participants(complex.getHasComponent());
 				if (importantParticipants(participants) <= maxSetSize)
-					participants.forEach((child, s) -> addInteraction(context, "physical", a, as, child, s));
+					participants.forEach((child, s) -> addInteraction(context, type, a, as, child, s));
 			}
-			// Optional, write interactions of complexes
-			writeInteraction(context, a, as, b, bs);
 		} else writeInteraction(context, a, as, b, bs);
 	}
 
