@@ -9,8 +9,10 @@ public class Interaction {
 	private final Integer ast;
 	private final PhysicalEntity b;
 	private final Integer bst;
+	private String type;
 
-	public Interaction(DatabaseObject context, PhysicalEntity a, Integer ast, PhysicalEntity b, Integer bst) {
+	public Interaction(String type, DatabaseObject context, PhysicalEntity a, Integer ast, PhysicalEntity b, Integer bst) {
+		this.type = type;
 		this.context = context;
 		this.a = a;
 		this.ast = ast;
@@ -36,5 +38,9 @@ public class Interaction {
 
 	public Integer getBst() {
 		return bst;
+	}
+
+	public String getType() {
+		return type;
 	}
 }

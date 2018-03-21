@@ -1,6 +1,9 @@
 package org.reactome.server.tools.interaction.exporter;
 
-import org.reactome.server.graph.domain.model.*;
+import org.reactome.server.graph.domain.model.Complex;
+import org.reactome.server.graph.domain.model.DatabaseObject;
+import org.reactome.server.graph.domain.model.Polymer;
+import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.service.SchemaService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
@@ -80,9 +83,6 @@ public class InteractionExporter {
 		} else {
 			final Collection<DatabaseObject> complexes = new ArrayList<>(SCHEMA_SERVICE.getByClass(Complex.class, species));
 			InteractionCollector.export(complexes, format, output, includeSimpleEntity, species, maxSetSize);
-
-			final Collection<DatabaseObject> sets = new ArrayList<>(SCHEMA_SERVICE.getByClass(EntitySet.class, species));
-			InteractionCollector.export(sets, format, output, includeSimpleEntity, species, maxSetSize);
 
 			final Collection<DatabaseObject> polymers = new LinkedList<>(SCHEMA_SERVICE.getByClass(Polymer.class, species));
 			InteractionCollector.export(polymers, format, output, includeSimpleEntity, species, maxSetSize);

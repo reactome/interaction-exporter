@@ -2,6 +2,8 @@ package org.reactome.server.tools.interaction.exporter.util;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Timer;
+import java.util.TimerTask;
 
 public class ProgressBar {
 
@@ -9,6 +11,10 @@ public class ProgressBar {
 	private int last = -1;
 	private long start;
 	private final static DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss");
+	private String message;
+	private double progress;
+	private boolean started = false;
+	private Timer timer = new Timer();
 
 	public ProgressBar() {
 		this.chunks = 50;
@@ -21,19 +27,30 @@ public class ProgressBar {
 	/**
 	 * @param progress between 0 and 1
 	 */
-	public void setProgress(double progress, String message) {
-		int completed = (int) (progress * chunks);
-		final long elapsed = (System.nanoTime() - start) / 1000000;
-		if (elapsed % 3000 > 2990 && completed <= last) return;
-		if (last < 0) {
+	public synchronized void setProgress(double progress, String message) {
+		this.message = message;
+		this.progress = progress;
+		if (!started) {
+			started = true;
+			timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					printProgress();
+				}
+			}, 250, 250);
 			start = System.nanoTime();
 		}
-		printProgresss(progress, message, completed, elapsed);
-		last = completed;
-		if (progress >= 1) System.out.println();
 	}
 
-	private void printProgresss(double progress, String message, int completed, long elapsed) {
+	private void printProgress() {
+		int completed = (int) (progress * chunks);
+		final long elapsed = (System.nanoTime() - start) / 1000000;
+		printProgress(progress, message, completed, elapsed);
+		if (progress >= 1) timer.cancel();
+
+	}
+
+	private void printProgress(double progress, String message, int completed, long elapsed) {
 		System.out.printf("\r%s %6.2f%% [", DATE_FORMAT.format(elapsed), progress * 100);
 		for (int i = 0; i < completed; i++) System.out.print("=");
 		int remaining = chunks - completed;
@@ -49,5 +66,6 @@ public class ProgressBar {
 
 	public void restart() {
 		last = -1;
+		started = false;
 	}
 }

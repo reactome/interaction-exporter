@@ -8,10 +8,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.*;
 
 
 class CheckUniquenessTest {
@@ -25,11 +22,9 @@ class CheckUniquenessTest {
 			long[] line = new long[]{0};
 			reader.lines().forEach(s -> {
 				final String[] row = s.split("\t");
-				String hashCode = row[0].split(":")[1];
-				final String a = row[1].split(":")[1];
-				final String b = row[2].split(":")[1];
-				if (a.compareTo(b) < 0) hashCode += a + b;
-				else hashCode += b + a;
+				final String a = row[2].split(":")[1];
+				final String b = row[3].split(":")[1];
+				final String hashCode = row[1].split(":")[1] + getCode(a, b);
 				if (hashes.contains(hashCode))
 					Assertions.fail(line[0] + " " + s);
 				hashes.add(hashCode);
@@ -40,22 +35,27 @@ class CheckUniquenessTest {
 		}
 	}
 
+	private String getCode(String a, String b) {
+		return a.compareTo(b) > 0
+				? a + b
+				: b + a;
+	}
+
 	@Ignore
 	void testHisUniqueness() {
 		final File standard = new File("/home/pascual/proyectos/reactome/psicquic/stids.txt");
-		final Set<String> hashes = new HashSet<>();
+		final Set<String> tripleHashes = new HashSet<>();
 		try (BufferedReader reader = new BufferedReader(new FileReader(standard))) {
 			long[] line = new long[]{0};
 			reader.lines().forEach(s -> {
 				final String[] row = s.split("\t");
-				String hashCode = row[0];
 				final String a = row[2];
 				final String b = row[4];
-				if (a.compareTo(b) > 0) hashCode += a + b;
-				else hashCode += b + a;
-				if (hashes.contains(hashCode))
+				final String doubleHashCode = getCode(a, b);
+				final String tripleHashCode = row[0] + doubleHashCode;
+				if (tripleHashes.contains(tripleHashCode))
 					Assertions.fail(line[0] + " " + s);
-				hashes.add(hashCode);
+				tripleHashes.add(tripleHashCode);
 				line[0]++;
 			});
 		} catch (IOException e) {
@@ -67,59 +67,90 @@ class CheckUniquenessTest {
 	void testEquality() {
 		final File standard = new File("/home/pascual/proyectos/reactome/psicquic/stids.txt");
 		final File result = new File("output.txt");
-		final Set<String> standardLines = new TreeSet<>();
+		final Set<String> tripleHashCodes = new TreeSet<>();
+		final Set<String> doubleHashCodes = new TreeSet<>();
 		try (BufferedReader reader = new BufferedReader(new FileReader(standard))) {
 			reader.lines()
 					.map(line -> line.split("\t"))
-					.map(line -> {
-						String code = line[0];
-						if (line[2].compareTo(line[4]) > 0)
-							code += line[2] + line[4];
-						else code += line[4] + line[2];
-						return code;
-					})
-					.forEach(standardLines::add);
+					.forEach(line -> {
+						final String doubleHashCode = getCode(line[2], line[4]);
+						final String tripleHashCode = line[0] + doubleHashCode;
+						doubleHashCodes.add(doubleHashCode);
+						tripleHashCodes.add(tripleHashCode);
+					});
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
-		final int standardl = standardLines.size();
-		final AtomicInteger matches = new AtomicInteger();
-		final AtomicInteger total = new AtomicInteger();
-		final AtomicInteger s = new AtomicInteger();
-
+		final Set<String> pDoubleHashCodes = new TreeSet<>();
+		final Set<String> pTripleHashCodes = new TreeSet<>();
 		try (BufferedReader reader = new BufferedReader(new FileReader(result))) {
 			reader.lines()
 					.forEach(line -> {
 						final String[] split = line.split("\t");
-						final String stId = split[0].split(":")[1];
-						final String aStId = split[1].split(":")[1];
-						final String bStId = split[2].split(":")[1];
-						String code = stId;
-						if (aStId.compareTo(bStId) > 0)
-							code += aStId + bStId;
-						else code += bStId + aStId;
-						if (standardLines.contains(code)) {
-							matches.incrementAndGet();
-							standardLines.remove(code);
-						} else {
-							if (s.incrementAndGet() < 15)
-								System.out.println(code.replaceAll("(\\d)R", "$1 R"));
-						}
-						total.getAndIncrement();
+						final String stId = split[1].split(":")[1];
+						final String aStId = split[2].split(":")[1];
+						final String bStId = split[3].split(":")[1];
+						final String doubleHashCode = getCode(aStId, bStId);
+						final String tripleHashCode = stId + doubleHashCode;
+						pDoubleHashCodes.add(doubleHashCode);
+						pTripleHashCodes.add(tripleHashCode);
 					});
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println("Standard = " + standardl);
-		System.out.println("Result   = " + total.get());
-		System.out.println("matches  = " + matches.get());
-		System.out.println("missing  = " + standardLines.size());
-		System.out.println("new      = " + (total.get() - matches.get()));
-		standardLines.stream()
-//				.filter(line -> line.matches("R-HSA-\\d*R-(HSA|ALL)-\\d*R-(HSA|ALL)-\\d*"))
-				.map(line -> line.replaceAll("(\\d)R", "$1 R"))
-				.forEach(System.out::println);
+
+		System.out.println("Uniques:");
+		venn(doubleHashCodes, pDoubleHashCodes);
+		System.out.println("With context:");
+		venn(tripleHashCodes, pTripleHashCodes);
+		customVenn(doubleHashCodes, pDoubleHashCodes, tripleHashCodes, pTripleHashCodes);
+	}
+
+	private void customVenn(Set<String> aDouble, Set<String> bDouble, Set<String> aContext, Set<String> bContext) {
+		final Set<String> common = new TreeSet<>(aDouble);
+		common.retainAll(bDouble);
+		final Set<String> justA = new TreeSet<>(aDouble);
+		justA.removeAll(bDouble);
+		final Set<String> justB = new TreeSet<>(bDouble);
+		justB.removeAll(aDouble);
+		System.out.println("A:");
+		randomWithContext(justA, aContext);
+		System.out.println("B:");
+		randomWithContext(justB, bContext);
+	}
+
+	private void randomWithContext(Set<String> interactions, Set<String> context) {
+		final ArrayList<String> list = new ArrayList<>(interactions);
+		final Random random = new Random(0);
+		for (int i = 0; i < 15; i++) {
+			final String interaction = list.get(random.nextInt(list.size()));
+			context.stream()
+					.filter(s -> s.endsWith(interaction))
+					.forEach(s -> System.out.println(s.replaceAll("(\\d+)R", "$1 R")));
+		}
+	}
+
+	private void venn(Set<String> a, Set<String> b) {
+		final Set<String> common = new TreeSet<>(a);
+		common.retainAll(b);
+		final Set<String> justA = new TreeSet<>(a);
+		justA.removeAll(b);
+		final Set<String> justB = new TreeSet<>(b);
+		justB.removeAll(a);
+		System.out.println(" - common = " + common.size());
+		System.out.println(" -      a = " + justA.size());
+		System.out.println(" -      b = " + justB.size());
+	}
+
+	private void printRandom(Set<String> justA) {
+		final ArrayList<String> list = new ArrayList<>(justA);
+		final Random random = new Random(0);
+		for (int i = 0; i < 15; i++) {
+			final String interaction = list.get(random.nextInt(list.size()));
+			System.out.println(interaction.replaceAll("(\\d+)R", "$1 R"));
+		}
 	}
 
 }

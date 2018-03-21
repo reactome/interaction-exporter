@@ -10,6 +10,7 @@ public class TsvExporter implements BiConsumer<Interaction, PrintStream> {
 	@Override
 	public void accept(Interaction interaction, PrintStream output) {
 		output.println(String.join("\t",
+				interaction.getType(),
 				String.format("%s:%s", interaction.getContext().getSchemaClass(), interaction.getContext().getStId()),
 				String.format("%s:%s", interaction.getA().getClass().getSimpleName(), interaction.getA().getStId(), interaction.getAst()),
 				String.format("%s:%s", interaction.getB().getClass().getSimpleName(), interaction.getB().getStId(), interaction.getBst())));
