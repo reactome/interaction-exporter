@@ -43,6 +43,7 @@ public class InteractionCollector {
 			bar.setProgress((double) i / objects.size(), progress);
 			i += 1;
 		}
+		bar.flush();
 		System.out.println();
 	}
 

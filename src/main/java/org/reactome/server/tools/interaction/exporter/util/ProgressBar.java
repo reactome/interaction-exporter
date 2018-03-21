@@ -7,10 +7,15 @@ import java.util.TimerTask;
 
 public class ProgressBar {
 
-	private final int chunks;
-	private int last = -1;
-	private long start;
 	private final static DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss");
+	private final TimerTask task = new TimerTask() {
+		@Override
+		public void run() {
+			printProgress();
+		}
+	};
+	private final int chunks;
+	private long start;
 	private String message;
 	private double progress;
 	private boolean started = false;
@@ -32,12 +37,7 @@ public class ProgressBar {
 		this.progress = progress;
 		if (!started) {
 			started = true;
-			timer.schedule(new TimerTask() {
-				@Override
-				public void run() {
-					printProgress();
-				}
-			}, 250, 250);
+			timer.schedule(task, 250, 250);
 			start = System.nanoTime();
 		}
 	}
@@ -54,7 +54,7 @@ public class ProgressBar {
 		System.out.printf("\r%s %6.2f%% [", DATE_FORMAT.format(elapsed), progress * 100);
 		for (int i = 0; i < completed; i++) System.out.print("=");
 		int remaining = chunks - completed;
-		if (remaining > 1) {
+		if (remaining > 0) {
 			remaining -= 1;
 			System.out.print(">");
 		}
@@ -64,8 +64,8 @@ public class ProgressBar {
 		System.out.flush();
 	}
 
-	public void restart() {
-		last = -1;
-		started = false;
+	public void flush() {
+		task.run();
+		timer.cancel();
 	}
 }
