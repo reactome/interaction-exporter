@@ -1,19 +1,23 @@
-package org.reactome.server.tools.interaction.exporter.format;
+package org.reactome.server.tools.interaction.exporter.writer;
 
 import org.reactome.server.tools.interaction.exporter.Interaction;
 
 import java.io.PrintStream;
-import java.util.function.BiConsumer;
 
-public class TsvExporter implements BiConsumer<Interaction, PrintStream> {
+public class ConsoleWriter implements InteractionWriter {
+
+	private final PrintStream output;
+
+	public ConsoleWriter(PrintStream output) {
+		this.output = output;
+	}
 
 	@Override
-	public void accept(Interaction interaction, PrintStream output) {
+	public void write(Interaction interaction) {
 		output.println(String.join("\t",
 				interaction.getType(),
 				String.format("%s:%s", interaction.getContext().getSchemaClass(), interaction.getContext().getStId()),
 				String.format("%s:%s", interaction.getA().getClass().getSimpleName(), interaction.getA().getStId(), interaction.getAst()),
 				String.format("%s:%s", interaction.getB().getClass().getSimpleName(), interaction.getB().getStId(), interaction.getBst())));
-
 	}
 }

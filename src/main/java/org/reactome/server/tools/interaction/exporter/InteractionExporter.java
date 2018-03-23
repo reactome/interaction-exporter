@@ -1,18 +1,17 @@
 package org.reactome.server.tools.interaction.exporter;
 
-import org.reactome.server.graph.domain.model.Complex;
-import org.reactome.server.graph.domain.model.DatabaseObject;
-import org.reactome.server.graph.domain.model.Polymer;
-import org.reactome.server.graph.domain.model.ReactionLikeEvent;
+import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.service.SchemaService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
-import org.reactome.server.tools.interaction.exporter.collector.InteractionCollector;
+import org.reactome.server.tools.interaction.exporter.util.ProgressBar;
 
-import java.io.OutputStream;
-import java.io.PrintStream;
-import java.util.*;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 public class InteractionExporter {
 
@@ -21,21 +20,19 @@ public class InteractionExporter {
 
 	private String species = "Homo sapiens";
 	private IncludeSimpleEntity includeSimpleEntity = IncludeSimpleEntity.NON_TRIVIAL;
-	private PrintStream output = System.out;
-	private Format format = Format.TAB27;
 	private String stId;
 	private int maxSetSize = Integer.MAX_VALUE;
+	private boolean verbose;
+	private InteractionCollector collector;
 
 	private InteractionExporter() {
-
 	}
 
-	public static void export(Consumer<InteractionExporter> consumer) {
+	public static Stream<Interaction> stream(Consumer<InteractionExporter> consumer) {
 		final InteractionExporter exporter = new InteractionExporter();
 		consumer.accept(exporter);
-		exporter.export();
+		return exporter.stream();
 	}
-
 
 	public InteractionExporter setSpecies(String species) {
 		this.species = species;
@@ -44,16 +41,6 @@ public class InteractionExporter {
 
 	public InteractionExporter setIncludeSimpleEntity(IncludeSimpleEntity includeSimpleEntity) {
 		this.includeSimpleEntity = includeSimpleEntity;
-		return this;
-	}
-
-	public InteractionExporter setOutput(OutputStream output) {
-		this.output = new PrintStream(output);
-		return this;
-	}
-
-	public InteractionExporter setFormat(Format format) {
-		this.format = format;
 		return this;
 	}
 
@@ -67,30 +54,85 @@ public class InteractionExporter {
 		return this;
 	}
 
-	private void export() {
+	public InteractionExporter setVerbose(boolean verbose) {
+		this.verbose = verbose;
+		return this;
+	}
+
+	private Stream<Interaction> stream() {
+		collector = new InteractionCollector(includeSimpleEntity, species, maxSetSize);
 		if (stId != null) {
 			final DatabaseObject object = OBJECT_SERVICE.findById(stId);
-			if (object instanceof Complex) {
-				final Collection<DatabaseObject> complexes = Collections.singletonList(object);
-				InteractionCollector.export(complexes, format, output, includeSimpleEntity, species, maxSetSize);
-			} else if (object instanceof Polymer) {
-				final List<DatabaseObject> polymers = Collections.singletonList(object);
-				InteractionCollector.export(polymers, format, output, includeSimpleEntity, species, maxSetSize);
-			} else if (object instanceof ReactionLikeEvent) {
-				final List<DatabaseObject> reactions = Collections.singletonList(object);
-				InteractionCollector.export(reactions, format, output, includeSimpleEntity, species, maxSetSize);
-			}
+			final Collection<DatabaseObject> subContexts = getSubContexts(object);
+			return subContexts.stream()
+					.map(context -> collector.explore(context))
+					.flatMap(Collection::stream);
 		} else {
-			final Collection<DatabaseObject> complexes = new ArrayList<>(SCHEMA_SERVICE.getByClass(Complex.class, species));
-			InteractionCollector.export(complexes, format, output, includeSimpleEntity, species, maxSetSize);
+			if (verbose) {
+				final AtomicLong total = new AtomicLong();
+				final AtomicLong count = new AtomicLong();
+				final ProgressBar bar = new ProgressBar(75);
+				return Stream.of(Polymer.class, Complex.class, ReactionLikeEvent.class)
+						.map(aClass -> SCHEMA_SERVICE.getByClass(aClass, species))
+						.peek(collection -> total.set(collection.size()))
+						.flatMap(Collection::stream)
+						.peek(o -> {
+							count.incrementAndGet();
+							final String progress = String.format("%d/%d %s:%s", count.get(), total.get(), o.getSchemaClass(), o.getStId());
+							bar.setProgress(count.doubleValue() / total.doubleValue(), progress);
 
-			final Collection<DatabaseObject> polymers = new LinkedList<>(SCHEMA_SERVICE.getByClass(Polymer.class, species));
-			InteractionCollector.export(polymers, format, output, includeSimpleEntity, species, maxSetSize);
-
-			final Collection<DatabaseObject> reactions = new LinkedList<>(SCHEMA_SERVICE.getByClass(ReactionLikeEvent.class, species));
-			InteractionCollector.export(reactions, format, output, includeSimpleEntity, species, maxSetSize);
+						})
+						.map(collector::explore)
+						.flatMap(Collection::stream);
+			} else {
+				return Stream.of(Polymer.class, Complex.class, ReactionLikeEvent.class)
+						.map(reactomeClass -> SCHEMA_SERVICE.getByClass(reactomeClass, species))
+						.flatMap(Collection::stream)
+						.map(collector::explore)
+						.flatMap(Collection::stream);
+			}
 		}
 	}
 
-
+	private Collection<DatabaseObject> getSubContexts(DatabaseObject object) {
+		final Set<DatabaseObject> contexts = new LinkedHashSet<>();
+		if (object instanceof Complex) {
+			final Complex complex = (Complex) object;
+			contexts.add(complex);
+			if (complex.getHasComponent() != null)
+				complex.getHasComponent().stream()
+						.map(this::getSubContexts)
+						.forEach(contexts::addAll);
+		} else if (object instanceof EntitySet) {
+			final EntitySet entitySet = (EntitySet) object;
+			if (entitySet.getHasMember() != null)
+				entitySet.getHasMember().stream()
+						.map(this::getSubContexts)
+						.forEach(contexts::addAll);
+		} else if (object instanceof Polymer) {
+			final Polymer polymer = (Polymer) object;
+			contexts.add(polymer);
+			if (polymer.getRepeatedUnit() != null)
+				polymer.getRepeatedUnit().stream()
+						.map(this::getSubContexts)
+						.forEach(contexts::addAll);
+		} else if (object instanceof ReactionLikeEvent) {
+			final ReactionLikeEvent reaction = (ReactionLikeEvent) object;
+			contexts.add(reaction);
+			if (reaction.getInput() != null)
+				reaction.getInput().stream()
+						.map(this::getSubContexts)
+						.forEach(contexts::addAll);
+			if (reaction.getCatalystActivity() != null)
+				reaction.getCatalystActivity().forEach(catalystActivity -> {
+					if (catalystActivity.getActiveUnit() != null)
+						catalystActivity.getActiveUnit().stream()
+								.map(this::getSubContexts)
+								.forEach(contexts::addAll);
+					if (catalystActivity.getPhysicalEntity() != null)
+						contexts.addAll(getSubContexts(catalystActivity.getPhysicalEntity()));
+				});
+		}
+		return contexts;
+	}
 }

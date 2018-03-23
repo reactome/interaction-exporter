@@ -43,4 +43,27 @@ public class Interaction {
 	public String getType() {
 		return type;
 	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (obj == this) return true;
+		if (!(obj instanceof Interaction)) return false;
+		final Interaction that = (Interaction) obj;
+		return that.getContext().equals(this.getContext())
+				&& that.getType().equalsIgnoreCase(this.getType())
+				&& that.getA().equals(this.getA())
+				&& that.getAst().equals(this.getAst())
+				&& that.getB().equals(this.getB())
+				&& that.getBst().equals(this.getBst());
+	}
+
+	@Override
+	public String toString() {
+		return "["
+				+ "type=" + type
+				+ ", context=" + context.getSchemaClass() + ":" + context.getStId()
+				+ ", a=" + a.getSchemaClass() + ":" + a.getStId() + "(" + ast + ")"
+				+ ", b=" + b.getSchemaClass() + ":" + b.getStId() + "(" + bst + ")"
+				+ "]";
+	}
 }

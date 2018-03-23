@@ -19,7 +19,7 @@ public class ProgressBar {
 	private String message;
 	private double progress;
 	private boolean started = false;
-	private Timer timer = new Timer();
+	private Timer timer = new Timer(true);
 
 	public ProgressBar() {
 		this.chunks = 50;

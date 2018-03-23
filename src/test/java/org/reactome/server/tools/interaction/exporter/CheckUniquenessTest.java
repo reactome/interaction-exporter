@@ -139,8 +139,8 @@ class CheckUniquenessTest {
 		justA.removeAll(b);
 		final Set<String> justB = new TreeSet<>(b);
 		justB.removeAll(a);
-		System.out.println(" - common = " + common.size());
 		System.out.println(" -      a = " + justA.size());
+		System.out.println(" - common = " + common.size());
 		System.out.println(" -      b = " + justB.size());
 	}
 
