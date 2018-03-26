@@ -1,8 +1,6 @@
 package org.reactome.server.tools.interaction.exporter.writer;
 
-import org.reactome.server.graph.domain.model.EntityWithAccessionedSequence;
-import org.reactome.server.graph.domain.model.PhysicalEntity;
-import org.reactome.server.graph.domain.model.SimpleEntity;
+import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.tools.interaction.exporter.EntityIdentifier;
 import org.reactome.server.tools.interaction.exporter.Interaction;
 import org.reactome.server.tools.interaction.exporter.util.IdentifierResolver;
@@ -25,11 +23,12 @@ public class TsvWriter implements InteractionWriter {
 			"Pubmed references");
 	private static final String SEPARATOR = "\t";
 	private static final String EMPTY = "-";
-	private static final String SECONDARY_SEPARATOR = "-";
+	private static final String SECONDARY_SEPARATOR = "|";
 	private PrintStream output;
 
 	public TsvWriter(PrintStream output) {
 		this.output = output;
+		output.println("# " + String.join(SEPARATOR, COLUMNS));
 	}
 
 	@Override
@@ -45,10 +44,34 @@ public class TsvWriter implements InteractionWriter {
 		line[3] = bPrimaryIdentifier.toString();
 		line[4] = ensemblIdentifier(bIdentifiers);
 		line[5] = entrezGeneIdentifier(bIdentifiers);
-		line[6] = interaction.getType();
+		line[6] = type(interaction.getContext());
 		line[7] = "reactome:" + interaction.getContext().getStId();
-		line[8] = EMPTY;
+		line[8] = pubmeds(interaction.getContext());
 		output.println(String.join(SEPARATOR, line));
+	}
+
+	private String type(DatabaseObject context) {
+		if (context instanceof Complex)
+			return "complex";
+		else if (context instanceof ReactionLikeEvent)
+			return "reaction";
+		else return EMPTY;
+	}
+
+	private String pubmeds(DatabaseObject context) {
+		List<Publication> references = null;
+		if (context instanceof PhysicalEntity)
+			references = ((PhysicalEntity) context).getLiteratureReference();
+		else if (context instanceof ReactionLikeEvent)
+			references = ((ReactionLikeEvent) context).getLiteratureReference();
+		if (references == null)
+			return EMPTY;
+		return references.stream()
+				.filter(LiteratureReference.class::isInstance)
+				.map(LiteratureReference.class::cast)
+				.map(LiteratureReference::getPubMedIdentifier)
+				.map(String::valueOf)
+				.collect(Collectors.joining(SECONDARY_SEPARATOR));
 	}
 
 	private String entrezGeneIdentifier(List<EntityIdentifier> identifiers) {
@@ -56,7 +79,7 @@ public class TsvWriter implements InteractionWriter {
 				.filter(entityIdentifier -> entityIdentifier.getDatabaseName() != null)
 				.filter(entityIdentifier -> entityIdentifier.getDatabaseName().equalsIgnoreCase("entrezgene/locuslink"))
 				.map(EntityIdentifier::toString)
-				.collect(Collectors.joining("\t"));
+				.collect(Collectors.joining(SECONDARY_SEPARATOR));
 		return result.isEmpty() ? EMPTY : result;
 	}
 
@@ -65,7 +88,7 @@ public class TsvWriter implements InteractionWriter {
 				.filter(entityIdentifier -> entityIdentifier.getDatabaseName() != null)
 				.filter(entityIdentifier -> entityIdentifier.getDatabaseName().equalsIgnoreCase("ensembl"))
 				.map(EntityIdentifier::toString)
-				.collect(Collectors.joining("\t"));
+				.collect(Collectors.joining(SECONDARY_SEPARATOR));
 		return result.isEmpty() ? EMPTY : result;
 	}
 
@@ -73,19 +96,22 @@ public class TsvWriter implements InteractionWriter {
 		if (entity instanceof EntityWithAccessionedSequence) {
 			// 1 uniprot
 			final EntityIdentifier uniprot = identifiers.stream()
-					.filter(entityIdentifier -> entityIdentifier.getDatabaseName().equalsIgnoreCase("uniprot"))
+					.filter(entityIdentifier -> entityIdentifier.getDatabaseName() != null)
+					.filter(entityIdentifier -> entityIdentifier.getDatabaseName().equalsIgnoreCase("uniprotkb"))
 					.findFirst().orElse(null);
 			if (uniprot != null)
 				return uniprot;
 		} else if (entity instanceof SimpleEntity) {
 			// 1 ChEBI
 			final EntityIdentifier chebi = identifiers.stream()
+					.filter(entityIdentifier -> entityIdentifier.getDatabaseName() != null)
 					.filter(entityIdentifier -> entityIdentifier.getDatabaseName().equalsIgnoreCase("chebi"))
 					.findFirst().orElse(null);
 			if (chebi != null)
 				return chebi;
 		}
 		final EntityIdentifier reactome = identifiers.stream()
+				.filter(entityIdentifier -> entityIdentifier.getDatabaseName() != null)
 				.filter(entityIdentifier -> entityIdentifier.getDatabaseName().equalsIgnoreCase("reactome"))
 				.findFirst().orElse(null);
 		if (reactome != null)

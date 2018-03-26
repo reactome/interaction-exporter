@@ -15,7 +15,7 @@ public class ConsoleWriter implements InteractionWriter {
 	@Override
 	public void write(Interaction interaction) {
 		output.println(String.join("\t",
-				interaction.getType(),
+				interaction.getType().getPsiName(),
 				String.format("%s:%s", interaction.getContext().getSchemaClass(), interaction.getContext().getStId()),
 				String.format("%s:%s", interaction.getA().getClass().getSimpleName(), interaction.getA().getStId(), interaction.getAst()),
 				String.format("%s:%s", interaction.getB().getClass().getSimpleName(), interaction.getB().getStId(), interaction.getBst())));

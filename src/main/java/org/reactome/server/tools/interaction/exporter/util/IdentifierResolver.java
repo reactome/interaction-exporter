@@ -60,7 +60,7 @@ public class IdentifierResolver {
 	}
 
 	private static class EnsemblResolver implements SubResolver {
-		private static final String database = null;
+		private static final String database = "ENSEMBL";
 		private Pattern pattern = Pattern.compile("ENSG\\d+");
 
 		@Override

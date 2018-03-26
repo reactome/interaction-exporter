@@ -1,6 +1,8 @@
 package org.reactome.server.tools.interaction.exporter;
 
 import org.reactome.server.graph.utils.ReactomeGraphCore;
+import org.reactome.server.tools.interaction.exporter.filter.IncludeSimpleEntity;
+import org.reactome.server.tools.interaction.exporter.util.GraphCoreConfig;
 
 import java.io.FileOutputStream;
 import java.io.IOException;

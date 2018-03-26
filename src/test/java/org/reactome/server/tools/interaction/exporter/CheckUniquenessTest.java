@@ -16,7 +16,6 @@ class CheckUniquenessTest {
 
 	@Test
 	void testUniqueness() {
-
 		final Set<String> hashes = new HashSet<>();
 		try (BufferedReader reader = new BufferedReader(new FileReader("output.txt"))) {
 			long[] line = new long[]{0};

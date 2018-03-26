@@ -1,0 +1,7 @@
+# Interactor 1 uniprot id	Interactor 1 Ensembl gene id	Interactor 1 Entrez Gene id	Interactor 2 uniprot id	Interactor 2 Ensembl gene id	Interactor 2 Entrez Gene id	Interaction type	Interaction context	Pubmed references
+uniprotkb:Q9Y572	ENSEMBL:ENSG00000129465	entrezgene/locuslink:11035	uniprotkb:Q13546	ENSEMBL:ENSG00000137275	entrezgene/locuslink:8737	reaction	reactome:R-HSA-5213466	24059293|19524513
+uniprotkb:Q9Y572	ENSEMBL:ENSG00000129465	entrezgene/locuslink:11035	uniprotkb:Q9Y572	ENSEMBL:ENSG00000129465	entrezgene/locuslink:11035	reaction	reactome:R-HSA-5213466	24059293|19524513
+uniprotkb:Q13546	ENSEMBL:ENSG00000137275	entrezgene/locuslink:8737	uniprotkb:Q13546	ENSEMBL:ENSG00000137275	entrezgene/locuslink:8737	reaction	reactome:R-HSA-5213466	24059293|19524513
+uniprotkb:Q13546	ENSEMBL:ENSG00000137275	entrezgene/locuslink:8737	uniprotkb:Q9Y572	ENSEMBL:ENSG00000129465	entrezgene/locuslink:11035	reaction	reactome:R-HSA-5213466	24059293|19524513
+uniprotkb:Q9Y572	ENSEMBL:ENSG00000129465	entrezgene/locuslink:11035	uniprotkb:Q13546	ENSEMBL:ENSG00000137275	entrezgene/locuslink:8737	complex	reactome:R-HSA-5218868	22817896
+uniprotkb:Q13546	ENSEMBL:ENSG00000137275	entrezgene/locuslink:8737	uniprotkb:Q9Y572	ENSEMBL:ENSG00000129465	entrezgene/locuslink:11035	complex	reactome:R-HSA-5218862	22817896|19524512

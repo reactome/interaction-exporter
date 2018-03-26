@@ -2,6 +2,7 @@ package org.reactome.server.tools.interaction.exporter;
 
 import com.sun.istack.internal.NotNull;
 import org.reactome.server.graph.domain.model.*;
+import org.reactome.server.tools.interaction.exporter.filter.IncludeSimpleEntity;
 
 import java.util.*;
 import java.util.function.Function;
@@ -12,16 +13,11 @@ public class Unit {
 	private final Map<PhysicalEntity, Long> children;
 	private final long unitSize;
 	private final DatabaseObject object;
-//	private final List<Combination> combinations;
 
-	public Unit(DatabaseObject object, IncludeSimpleEntity includeSimpleEntity, int maxUnitSize) {
+	public Unit(DatabaseObject object, IncludeSimpleEntity includeSimpleEntity) {
 		this.object = object;
 		children = children(object, includeSimpleEntity).stream()
 				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
-//		combinations = combinations(object).stream()
-//				.filter(combination -> combination.getComponents().size() < maxUnitSize)
-//				.sorted(Comparator.comparingInt(o -> o.getComponents().size()))
-//				.collect(Collectors.toList());
 		unitSize = unitSize(object);
 	}
 

@@ -4,6 +4,7 @@ import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.service.SchemaService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
+import org.reactome.server.tools.interaction.exporter.filter.IncludeSimpleEntity;
 import org.reactome.server.tools.interaction.exporter.util.ProgressBar;
 
 import java.util.Collection;

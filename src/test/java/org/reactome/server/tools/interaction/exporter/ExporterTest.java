@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
+import org.reactome.server.tools.interaction.exporter.util.GraphCoreConfig;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -25,12 +26,12 @@ class ExporterTest {
 	void printTree() {
 		ReactomeGraphCore.initialise("localhost", "7474", "neo4j", "reactome", GraphCoreConfig.class);
 		DatabaseObjectService OBJECT_SERVICE = ReactomeGraphCore.getService(DatabaseObjectService.class);
-		String stId = "R-HSA-5213466";
+		String stId = "R-HSA-3301345";
 		final DatabaseObject object = OBJECT_SERVICE.findById(stId);
 		expand(object, 1, 0, "");
 		System.out.println();
 		InteractionExporter.stream(exporter -> exporter
-				.setMaxUnitSize(4)
+				.setMaxUnitSize(15)
 				.setObject(stId))
 				.forEach(System.out::println);
 	}

@@ -9,9 +9,9 @@ public class Interaction {
 	private final Long ast;
 	private final PhysicalEntity b;
 	private final Long bst;
-	private String type;
+	private InteractionType type;
 
-	public Interaction(String type, DatabaseObject context, PhysicalEntity a, Long ast, PhysicalEntity b, Long bst) {
+	public Interaction(InteractionType type, DatabaseObject context, PhysicalEntity a, Long ast, PhysicalEntity b, Long bst) {
 		this.type = type;
 		this.context = context;
 		this.a = a;
@@ -40,7 +40,7 @@ public class Interaction {
 		return bst;
 	}
 
-	public String getType() {
+	public InteractionType getType() {
 		return type;
 	}
 
@@ -50,7 +50,7 @@ public class Interaction {
 		if (!(obj instanceof Interaction)) return false;
 		final Interaction that = (Interaction) obj;
 		return that.getContext().equals(this.getContext())
-				&& that.getType().equalsIgnoreCase(this.getType())
+				&& that.getType().equals(this.getType())
 				&& that.getA().equals(this.getA())
 				&& that.getAst().equals(this.getAst())
 				&& that.getB().equals(this.getB())
@@ -60,7 +60,7 @@ public class Interaction {
 	@Override
 	public String toString() {
 		return "["
-				+ "type=" + type
+				+ "type=" + type.getPsiName()
 				+ ", context=" + context.getSchemaClass() + ":" + context.getStId()
 				+ ", a=" + a.getSchemaClass() + ":" + a.getStId() + "(" + ast + ")"
 				+ ", b=" + b.getSchemaClass() + ":" + b.getStId() + "(" + bst + ")"

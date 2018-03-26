@@ -1,2 +1,0 @@
-# Interactor 1 uniprot id	Interactor 1 Ensembl gene id	Interactor 1 Entrez Gene id	Interactor 2 uniprot id	Interactor 2 Ensembl gene id	Interactor 2 Entrez Gene id	Interaction type	Interaction context	Pubmed references
-uniprotkb:P22392	ENSEMBL:ENSG00000243678	EntrezGene:4831	uniprotkb:P22392	ENSEMBL:ENSG00000243678	EntrezGene:4831	complex	R-HSA-110576	1851158
