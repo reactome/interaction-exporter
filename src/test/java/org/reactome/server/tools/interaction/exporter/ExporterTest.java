@@ -5,10 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
-import org.reactome.server.tools.interaction.exporter.writer.ConsoleWriter;
-import org.reactome.server.tools.interaction.exporter.writer.InteractionWriter;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -28,29 +25,27 @@ class ExporterTest {
 	void printTree() {
 		ReactomeGraphCore.initialise("localhost", "7474", "neo4j", "reactome", GraphCoreConfig.class);
 		DatabaseObjectService OBJECT_SERVICE = ReactomeGraphCore.getService(DatabaseObjectService.class);
-		String stId = "R-HSA-1911487";
+		String stId = "R-HSA-5213466";
 		final DatabaseObject object = OBJECT_SERVICE.findById(stId);
 		expand(object, 1, 0, "");
 		System.out.println();
-		InteractionWriter writer = new ConsoleWriter(System.out);
 		InteractionExporter.stream(exporter -> exporter
-				.setMaxSetSize(4)
+				.setMaxUnitSize(4)
 				.setObject(stId))
-				.forEach(interaction -> {
-					try {
-						writer.write(interaction);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				});
+				.forEach(System.out::println);
 	}
 
 	private void expand(DatabaseObject entity, int stoichiometry, int level, String prefix) {
 		final Map<String, Map<PhysicalEntity, Integer>> children = participants(entity);
 		for (int i = 0; i < level; i++) System.out.print("|    ");
 		if (prefix.isEmpty()) prefix = children.isEmpty() ? "-" : "+";
-		String st = stoichiometry == 1 ? "" : stoichiometry + " x ";
-		System.out.println(String.format(format, prefix, st, simpleSchemaClass(entity), entity.getStId()));
+		final String st = stoichiometry == 1 ? "" : stoichiometry + " x ";
+		final String t = (entity instanceof SimpleEntity)
+				&& ((SimpleEntity) entity).getReferenceEntity() != null
+				&& ((SimpleEntity) entity).getReferenceEntity().getTrivial() != null
+				&& ((SimpleEntity) entity).getReferenceEntity().getTrivial()
+				? " (trivial)" : "";
+		System.out.println(String.format(format, prefix, st, simpleSchemaClass(entity), entity.getStId()) + t);
 		children.forEach((rol, map) -> map.forEach((child, s) -> expand(child, s, level + 1, rol)));
 	}
 

@@ -6,12 +6,12 @@ import org.reactome.server.graph.domain.model.PhysicalEntity;
 public class Interaction {
 	private final DatabaseObject context;
 	private final PhysicalEntity a;
-	private final Integer ast;
+	private final Long ast;
 	private final PhysicalEntity b;
-	private final Integer bst;
+	private final Long bst;
 	private String type;
 
-	public Interaction(String type, DatabaseObject context, PhysicalEntity a, Integer ast, PhysicalEntity b, Integer bst) {
+	public Interaction(String type, DatabaseObject context, PhysicalEntity a, Long ast, PhysicalEntity b, Long bst) {
 		this.type = type;
 		this.context = context;
 		this.a = a;
@@ -28,7 +28,7 @@ public class Interaction {
 		return a;
 	}
 
-	public Integer getAst() {
+	public Long getAst() {
 		return ast;
 	}
 
@@ -36,7 +36,7 @@ public class Interaction {
 		return b;
 	}
 
-	public Integer getBst() {
+	public Long getBst() {
 		return bst;
 	}
 

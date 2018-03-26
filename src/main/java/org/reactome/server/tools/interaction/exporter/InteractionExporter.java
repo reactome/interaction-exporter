@@ -21,7 +21,7 @@ public class InteractionExporter {
 	private String species = "Homo sapiens";
 	private IncludeSimpleEntity includeSimpleEntity = IncludeSimpleEntity.NON_TRIVIAL;
 	private String stId;
-	private int maxSetSize = Integer.MAX_VALUE;
+	private int maxUnitSize = Integer.MAX_VALUE;
 	private boolean verbose;
 	private InteractionCollector collector;
 
@@ -49,8 +49,8 @@ public class InteractionExporter {
 		return this;
 	}
 
-	public InteractionExporter setMaxSetSize(int maxSetSize) {
-		this.maxSetSize = maxSetSize;
+	public InteractionExporter setMaxUnitSize(int maxUnitSize) {
+		this.maxUnitSize = maxUnitSize;
 		return this;
 	}
 
@@ -60,10 +60,10 @@ public class InteractionExporter {
 	}
 
 	private Stream<Interaction> stream() {
-		collector = new InteractionCollector(includeSimpleEntity, species, maxSetSize);
+		collector = new InteractionCollector(includeSimpleEntity, species, maxUnitSize);
 		if (stId != null) {
 			final DatabaseObject object = OBJECT_SERVICE.findById(stId);
-			final Collection<DatabaseObject> subContexts = getSubContexts(object);
+			final Collection<DatabaseObject> subContexts = collectContexts(object);
 			return subContexts.stream()
 					.map(context -> collector.explore(context))
 					.flatMap(Collection::stream);
@@ -80,7 +80,6 @@ public class InteractionExporter {
 							count.incrementAndGet();
 							final String progress = String.format("%d/%d %s:%s", count.get(), total.get(), o.getSchemaClass(), o.getStId());
 							bar.setProgress(count.doubleValue() / total.doubleValue(), progress);
-
 						})
 						.map(collector::explore)
 						.flatMap(Collection::stream);
@@ -94,43 +93,44 @@ public class InteractionExporter {
 		}
 	}
 
-	private Collection<DatabaseObject> getSubContexts(DatabaseObject object) {
+	/** Search for elements that can be contexts in this object. */
+	private Collection<DatabaseObject> collectContexts(DatabaseObject object) {
 		final Set<DatabaseObject> contexts = new LinkedHashSet<>();
 		if (object instanceof Complex) {
 			final Complex complex = (Complex) object;
 			contexts.add(complex);
 			if (complex.getHasComponent() != null)
 				complex.getHasComponent().stream()
-						.map(this::getSubContexts)
+						.map(this::collectContexts)
 						.forEach(contexts::addAll);
 		} else if (object instanceof EntitySet) {
 			final EntitySet entitySet = (EntitySet) object;
 			if (entitySet.getHasMember() != null)
 				entitySet.getHasMember().stream()
-						.map(this::getSubContexts)
+						.map(this::collectContexts)
 						.forEach(contexts::addAll);
 		} else if (object instanceof Polymer) {
 			final Polymer polymer = (Polymer) object;
 			contexts.add(polymer);
 			if (polymer.getRepeatedUnit() != null)
 				polymer.getRepeatedUnit().stream()
-						.map(this::getSubContexts)
+						.map(this::collectContexts)
 						.forEach(contexts::addAll);
 		} else if (object instanceof ReactionLikeEvent) {
 			final ReactionLikeEvent reaction = (ReactionLikeEvent) object;
 			contexts.add(reaction);
 			if (reaction.getInput() != null)
 				reaction.getInput().stream()
-						.map(this::getSubContexts)
+						.map(this::collectContexts)
 						.forEach(contexts::addAll);
 			if (reaction.getCatalystActivity() != null)
 				reaction.getCatalystActivity().forEach(catalystActivity -> {
 					if (catalystActivity.getActiveUnit() != null)
 						catalystActivity.getActiveUnit().stream()
-								.map(this::getSubContexts)
+								.map(this::collectContexts)
 								.forEach(contexts::addAll);
 					if (catalystActivity.getPhysicalEntity() != null)
-						contexts.addAll(getSubContexts(catalystActivity.getPhysicalEntity()));
+						contexts.addAll(collectContexts(catalystActivity.getPhysicalEntity()));
 				});
 		}
 		return contexts;
