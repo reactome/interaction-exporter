@@ -1,7 +1,7 @@
 package org.reactome.server.tools.interaction.exporter.util;
 
 import org.reactome.server.graph.domain.model.*;
-import org.reactome.server.tools.interaction.exporter.EntityIdentifier;
+import org.reactome.server.tools.interaction.exporter.psi.CrossReference;
 
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -18,13 +18,13 @@ public class IdentifierResolver {
 			new EnsemblResolver()
 	);
 
-	public static List<EntityIdentifier> getIdentifiers(PhysicalEntity entity) {
+	public static List<CrossReference> getIdentifiers(PhysicalEntity entity) {
 		// (entity{stId})-[:crossReference]-(cr{databaseName, identifier})
-		final List<EntityIdentifier> identifiers = new LinkedList<>();
-		identifiers.add(new EntityIdentifier(REACTOME, entity.getStId()));
+		final List<CrossReference> identifiers = new LinkedList<>();
+		identifiers.add(new CrossReference(REACTOME, entity.getStId(), null));
 		if (entity.getCrossReference() != null)
 			entity.getCrossReference().stream()
-					.map(reference -> new EntityIdentifier(reference.getDatabaseName(), reference.getIdentifier()))
+					.map(reference -> new CrossReference(reference.getDatabaseName(), reference.getIdentifier(), null))
 					.forEach(identifiers::add);
 		// (entity{stId})-[:referenceEntity]-(re{databaseName,identifier,otherIdentifier[]})
 		ReferenceEntity re = null;
@@ -37,7 +37,7 @@ public class IdentifierResolver {
 			final String id = re instanceof ReferenceIsoform && ((ReferenceIsoform) re).getVariantIdentifier() != null
 					? ((ReferenceIsoform) re).getVariantIdentifier()
 					: re.getIdentifier();
-			identifiers.add(new EntityIdentifier(re.getDatabaseName(), id));
+			identifiers.add(new CrossReference(re.getDatabaseName(), id, null));
 			if (re.getOtherIdentifier() != null) {
 				// (entity{stId})-[:referenceEntity]-(re{otherIdentifier[]})
 				re.getOtherIdentifier().stream()
@@ -56,7 +56,7 @@ public class IdentifierResolver {
 	}
 
 	private interface SubResolver {
-		EntityIdentifier resolve(String identifier);
+		CrossReference resolve(String identifier);
 	}
 
 	private static class EnsemblResolver implements SubResolver {
@@ -64,10 +64,10 @@ public class IdentifierResolver {
 		private Pattern pattern = Pattern.compile("ENSG\\d+");
 
 		@Override
-		public EntityIdentifier resolve(String identifier) {
+		public CrossReference resolve(String identifier) {
 			final Matcher matcher = pattern.matcher(identifier);
 			if (matcher.matches())
-				return new EntityIdentifier(database, identifier);
+				return new CrossReference(database, identifier, null);
 			return null;
 		}
 	}
@@ -78,10 +78,10 @@ public class IdentifierResolver {
 		private final Pattern pattern = Pattern.compile("EntrezGene:(\\d+)");
 
 		@Override
-		public EntityIdentifier resolve(String identifier) {
+		public CrossReference resolve(String identifier) {
 			final Matcher matcher = pattern.matcher(identifier);
 			if (matcher.matches())
-				return new EntityIdentifier(database, matcher.group(1));
+				return new CrossReference(database, matcher.group(1), null);
 			return null;
 		}
 	}

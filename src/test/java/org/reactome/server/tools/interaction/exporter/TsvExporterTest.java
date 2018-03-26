@@ -1,13 +1,15 @@
 package org.reactome.server.tools.interaction.exporter;
 
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.interaction.exporter.util.GraphCoreConfig;
 import org.reactome.server.tools.interaction.exporter.writer.TsvWriter;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.io.PrintStream;
 
 public class TsvExporterTest {
 
@@ -24,7 +26,7 @@ public class TsvExporterTest {
 				.forEach(writer::write);
 		final InputStream result = new ByteArrayInputStream(outputStream.toByteArray());
 		final InputStream expected = TsvExporterTest.class.getResourceAsStream("tsv-result-1.txt");
-		assertEquals(expected, result);
+		TestUtils.assertEquals(expected, result);
 	}
 
 	@Test
@@ -51,33 +53,6 @@ public class TsvExporterTest {
 				.forEach(writer::write);
 		final InputStream result = new ByteArrayInputStream(outputStream.toByteArray());
 		final InputStream expected = TsvExporterTest.class.getResourceAsStream("tsv-result-2.txt");
-		System.out.println(new String(outputStream.toByteArray()));
-		assertEquals(expected, result);
+		TestUtils.assertEquals(expected, result);
 	}
-
-
-	private void assertEquals(InputStream expected, InputStream result) {
-		try {
-			final BufferedReader expectedReader = new BufferedReader(new InputStreamReader(expected));
-			final BufferedReader resultReader = new BufferedReader(new InputStreamReader(result));
-			int n = 1;
-			String expectedLine;
-			String resultLine;
-			while ((expectedLine = expectedReader.readLine()) != null) {
-				resultLine = resultReader.readLine();
-				if (resultLine == null)
-					Assertions.fail("Expected more lines at " + n);
-				if (!resultLine.equals(expectedLine)) {
-					final String message = String.format("At line %d%n - Expected:[%s]%n - Actual  :[%s]%n", n, expectedLine, resultLine);
-					Assertions.fail(message);
-				}
-			}
-			if (resultReader.readLine() != null)
-				Assertions.fail("No more lines expected at " + n);
-		} catch (IOException e) {
-			e.printStackTrace();
-			Assertions.fail(e.getMessage());
-		}
-	}
-
 }

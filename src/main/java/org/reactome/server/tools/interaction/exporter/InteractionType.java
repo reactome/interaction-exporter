@@ -1,13 +1,14 @@
 package org.reactome.server.tools.interaction.exporter;
 
+import org.reactome.server.tools.interaction.exporter.util.GoTree;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class InteractionType {
 
@@ -18,9 +19,18 @@ public class InteractionType {
 
 	static {
 		readTypes();
-//		new GoTree().getTerms().forEach()
+		readGoTree();
 		PHYSICAL = fromPsiMi("MI:0915");
 
+	}
+
+	private final Set<String> goId = new TreeSet<>();
+	private final String psiId;
+	private final String psiName;
+
+	private InteractionType(String psiId, String psiName) {
+		this.psiId = psiId;
+		this.psiName = psiName;
 	}
 
 	private static void readTypes() {
@@ -41,14 +51,23 @@ public class InteractionType {
 		}
 	}
 
+	private static void readGoTree() {
+		final List<GoTree.Term> terms = GoTree.readGo();
+		final Map<String, GoTree.Term> index = terms.stream()
+				.collect(Collectors.toMap(GoTree.Term::getId, Function.identity()));
+		terms.forEach(term -> {
+			final String id = term.getId();
+			InteractionType interactionType = DEFAULT_TYPE;
+			while (interactionType == DEFAULT_TYPE && term != null) {
+				interactionType = fromGo(term.getId());
+				term = term.getParents().stream()
+						.map(index::get)
+						.filter(Objects::nonNull)
+						.findFirst().orElse(null);
+			}
+			interactionType.getGoId().add(id);
+		});
 
-	private final Set<String> goId = new TreeSet<>();
-	private final String psiId;
-	private final String psiName;
-
-	private InteractionType(String psiId, String psiName) {
-		this.psiId = psiId;
-		this.psiName = psiName;
 	}
 
 	public static InteractionType fromGo(String go) {

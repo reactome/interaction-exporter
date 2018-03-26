@@ -1,8 +1,8 @@
 package org.reactome.server.tools.interaction.exporter.writer;
 
 import org.reactome.server.graph.domain.model.*;
-import org.reactome.server.tools.interaction.exporter.EntityIdentifier;
 import org.reactome.server.tools.interaction.exporter.Interaction;
+import org.reactome.server.tools.interaction.exporter.psi.CrossReference;
 import org.reactome.server.tools.interaction.exporter.util.IdentifierResolver;
 
 import java.io.PrintStream;
@@ -34,14 +34,14 @@ public class TsvWriter implements InteractionWriter {
 	@Override
 	public void write(Interaction interaction) {
 		final String[] line = new String[COLUMNS.size()];
-		List<EntityIdentifier> aIdentifiers = IdentifierResolver.getIdentifiers(interaction.getA());
-		List<EntityIdentifier> bIdentifiers = IdentifierResolver.getIdentifiers(interaction.getB());
-		final EntityIdentifier aPrimaryIdentifier = primaryIdentifier(interaction.getA(), aIdentifiers);
-		final EntityIdentifier bPrimaryIdentifier = primaryIdentifier(interaction.getB(), bIdentifiers);
-		line[0] = aPrimaryIdentifier.toString();
+		List<CrossReference> aIdentifiers = IdentifierResolver.getIdentifiers(interaction.getA());
+		List<CrossReference> bIdentifiers = IdentifierResolver.getIdentifiers(interaction.getB());
+		final CrossReference aPrimaryIdentifier = primaryIdentifier(interaction.getA(), aIdentifiers);
+		final CrossReference bPrimaryIdentifier = primaryIdentifier(interaction.getB(), bIdentifiers);
+		line[0] = toString(aPrimaryIdentifier);
 		line[1] = ensemblIdentifier(aIdentifiers);
 		line[2] = entrezGeneIdentifier(aIdentifiers);
-		line[3] = bPrimaryIdentifier.toString();
+		line[3] = toString(bPrimaryIdentifier);
 		line[4] = ensemblIdentifier(bIdentifiers);
 		line[5] = entrezGeneIdentifier(bIdentifiers);
 		line[6] = type(interaction.getContext());
@@ -74,50 +74,52 @@ public class TsvWriter implements InteractionWriter {
 				.collect(Collectors.joining(SECONDARY_SEPARATOR));
 	}
 
-	private String entrezGeneIdentifier(List<EntityIdentifier> identifiers) {
+	private String entrezGeneIdentifier(List<CrossReference> identifiers) {
 		final String result = identifiers.stream()
-				.filter(entityIdentifier -> entityIdentifier.getDatabaseName() != null)
-				.filter(entityIdentifier -> entityIdentifier.getDatabaseName().equalsIgnoreCase("entrezgene/locuslink"))
-				.map(EntityIdentifier::toString)
+				.filter(entityIdentifier -> entityIdentifier.getDatabase() != null)
+				.filter(entityIdentifier -> entityIdentifier.getDatabase().equalsIgnoreCase("entrezgene/locuslink"))
+				.map(this::toString)
 				.collect(Collectors.joining(SECONDARY_SEPARATOR));
 		return result.isEmpty() ? EMPTY : result;
 	}
 
-	private String ensemblIdentifier(List<EntityIdentifier> identifiers) {
+	private String ensemblIdentifier(List<CrossReference> identifiers) {
 		final String result = identifiers.stream()
-				.filter(entityIdentifier -> entityIdentifier.getDatabaseName() != null)
-				.filter(entityIdentifier -> entityIdentifier.getDatabaseName().equalsIgnoreCase("ensembl"))
-				.map(EntityIdentifier::toString)
+				.filter(entityIdentifier -> entityIdentifier.getDatabase() != null)
+				.filter(entityIdentifier -> entityIdentifier.getDatabase().equalsIgnoreCase("ensembl"))
+				.map(this::toString)
 				.collect(Collectors.joining(SECONDARY_SEPARATOR));
 		return result.isEmpty() ? EMPTY : result;
 	}
 
-	private EntityIdentifier primaryIdentifier(PhysicalEntity entity, List<EntityIdentifier> identifiers) {
+	private CrossReference primaryIdentifier(PhysicalEntity entity, List<CrossReference> identifiers) {
 		if (entity instanceof EntityWithAccessionedSequence) {
-			// 1 uniprot
-			final EntityIdentifier uniprot = identifiers.stream()
-					.filter(entityIdentifier -> entityIdentifier.getDatabaseName() != null)
-					.filter(entityIdentifier -> entityIdentifier.getDatabaseName().equalsIgnoreCase("uniprotkb"))
+			// uniprot
+			final CrossReference uniprot = identifiers.stream()
+					.filter(reference -> reference.getDatabase() != null)
+					.filter(reference -> reference.getDatabase().equalsIgnoreCase("uniprotkb"))
 					.findFirst().orElse(null);
 			if (uniprot != null)
 				return uniprot;
 		} else if (entity instanceof SimpleEntity) {
-			// 1 ChEBI
-			final EntityIdentifier chebi = identifiers.stream()
-					.filter(entityIdentifier -> entityIdentifier.getDatabaseName() != null)
-					.filter(entityIdentifier -> entityIdentifier.getDatabaseName().equalsIgnoreCase("chebi"))
+			// ChEBI
+			final CrossReference chebi = identifiers.stream()
+					.filter(reference -> reference.getDatabase() != null)
+					.filter(reference -> reference.getDatabase().equalsIgnoreCase("chebi"))
 					.findFirst().orElse(null);
 			if (chebi != null)
 				return chebi;
 		}
-		final EntityIdentifier reactome = identifiers.stream()
-				.filter(entityIdentifier -> entityIdentifier.getDatabaseName() != null)
-				.filter(entityIdentifier -> entityIdentifier.getDatabaseName().equalsIgnoreCase("reactome"))
+		final CrossReference reactome = identifiers.stream()
+				.filter(reference -> reference.getDatabase() != null)
+				.filter(reference -> reference.getDatabase().equalsIgnoreCase("reactome"))
 				.findFirst().orElse(null);
 		if (reactome != null)
 			return reactome;
 		return identifiers.get(0);
 	}
 
-
+	private String toString(CrossReference reference) {
+		return (reference.getDatabase() == null ? "" : reference.getDatabase() + ":") + reference.getIdentifier();
+	}
 }

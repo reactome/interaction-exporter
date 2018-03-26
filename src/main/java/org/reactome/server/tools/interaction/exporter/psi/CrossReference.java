@@ -1,9 +1,11 @@
-package org.reactome.server.tools.interaction.exporter;
+package org.reactome.server.tools.interaction.exporter.psi;
+
 
 import java.util.Map;
 import java.util.TreeMap;
 
-public class EntityIdentifier {
+public final class CrossReference implements psidev.psi.mi.tab.model.CrossReference {
+
 	/**
 	 * This dictionary is case insensitive. Keys are the aliases, values are the
 	 * standard name of the database. If no entry in this dictionary for an
@@ -27,29 +29,52 @@ public class EntityIdentifier {
 		databases.put("refseq", "refseq");
 	}
 
-	private final String databaseName;
-	private final String identifier;
 
-	public EntityIdentifier(String databaseName, String identifier) {
-		this.databaseName = standardDatabaseName(databaseName);
+	private String database;
+	private String identifier;
+	private String text;
+
+	public CrossReference(String database, String identifier, String text) {
+		setDatabase(database);
 		this.identifier = identifier;
+		this.text = text;
 	}
 
-	private String standardDatabaseName(String databaseName) {
-		if (databaseName == null) return null;
-		return databases.getOrDefault(databaseName, databaseName);
+	@Override
+	public String getDatabase() {
+		return database;
 	}
 
-	public String getDatabaseName() {
-		return databaseName;
+	@Override
+	public void setDatabase(String database) {
+		this.database = database == null
+				? null
+				: databases.getOrDefault(database, database);
 	}
 
+	@Override
 	public String getIdentifier() {
 		return identifier;
 	}
 
 	@Override
-	public String toString() {
-		return (databaseName == null ? "" : databaseName + ":") + identifier;
+	public void setIdentifier(String identifier) {
+		this.identifier = identifier;
 	}
+
+	@Override
+	public String getText() {
+		return text;
+	}
+
+	@Override
+	public void setText(String text) {
+		this.text = text;
+	}
+
+	@Override
+	public boolean hasText() {
+		return text != null && !text.isEmpty();
+	}
+
 }
