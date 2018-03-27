@@ -1,5 +1,7 @@
 package org.reactome.server.tools.interaction.exporter;
 
+import org.reactome.server.tools.interaction.exporter.psi.SimpleCrossReference;
+import org.reactome.server.tools.interaction.exporter.util.Constants;
 import org.reactome.server.tools.interaction.exporter.util.GoTree;
 
 import java.io.BufferedReader;
@@ -10,7 +12,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class InteractionType {
+public class InteractionType extends SimpleCrossReference {
 
 	/** psi-mi:"MI:0915"(physical association) */
 	public static final InteractionType PHYSICAL;
@@ -25,12 +27,9 @@ public class InteractionType {
 	}
 
 	private final Set<String> goId = new TreeSet<>();
-	private final String psiId;
-	private final String psiName;
 
 	private InteractionType(String psiId, String psiName) {
-		this.psiId = psiId;
-		this.psiName = psiName;
+		super(Constants.PSI_MI, psiId, psiName);
 	}
 
 	private static void readTypes() {
@@ -40,15 +39,23 @@ public class InteractionType {
 			reader.lines()
 					.map(line -> line.split("\t"))
 					.map(line -> {
-						final InteractionType type = new InteractionType(line[3], line[4]);
+						final InteractionType type = getOrCreate(line[3], line[4]);
 						type.getGoId().add(line[0]);
 						return type;
 					})
+					.distinct()
 					.forEach(types::add);
 		} catch (IOException e) {
 			// Should never happen, it's a resource
 			e.printStackTrace();
 		}
+	}
+
+	private static InteractionType getOrCreate(String id, String name) {
+		return types.stream()
+				.filter(type -> type.getIdentifier().equals(id))
+				.findFirst()
+				.orElse(new InteractionType(id, name));
 	}
 
 	private static void readGoTree() {
@@ -79,20 +86,13 @@ public class InteractionType {
 
 	public static InteractionType fromPsiMi(String psiId) {
 		return types.stream()
-				.filter(type -> type.getPsiId().equals(psiId))
+				.filter(type -> type.getIdentifier().equals(psiId))
 				.findFirst()
 				.orElse(DEFAULT_TYPE);
-	}
-
-	public String getPsiId() {
-		return psiId;
-	}
-
-	public String getPsiName() {
-		return psiName;
 	}
 
 	public Set<String> getGoId() {
 		return goId;
 	}
+
 }

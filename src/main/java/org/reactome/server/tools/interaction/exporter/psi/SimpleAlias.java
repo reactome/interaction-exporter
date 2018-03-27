@@ -1,11 +1,11 @@
 package org.reactome.server.tools.interaction.exporter.psi;
 
-public class Alias implements psidev.psi.mi.tab.model.Alias {
+public class SimpleAlias implements psidev.psi.mi.tab.model.Alias {
 	private String dbSource;
 	private String name;
 	private String aliasType;
 
-	public Alias(String dbSource, String name, String aliasType) {
+	public SimpleAlias(String dbSource, String name, String aliasType) {
 		this.dbSource = dbSource;
 		this.name = name;
 		this.aliasType = aliasType;

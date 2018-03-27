@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 
 class InteractionExporterTest {
 
-	private static final String CHEMICAL = "chemical";
 	private static final String HOMO_SAPIENS = "Homo sapiens";
 	private static DatabaseObjectService object_service;
 	private static boolean connection;
@@ -80,9 +79,9 @@ class InteractionExporterTest {
 				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"), getById("R-HSA-157239"), 1L, getById("R-HSA-416464"), 1L),
 				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"), getById("R-HSA-1983670"), 1L, getById("R-HSA-416464"), 1L),
 				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"), getById("R-HSA-1604437"), 1L, getById("R-HSA-416464"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"), getById("R-HSA-157239"), 1L, getById("R-HSA-1604437"), 1L),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"), getById("R-HSA-1604437"), 1L, getById("R-HSA-157239"), 1L),
 				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"), getById("R-HSA-1604437"), 1L, getById("R-HSA-1983670"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-157027"), getById("R-HSA-157239"), 1L, getById("R-HSA-1983670"), 1L)
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-157027"), getById("R-HSA-1983670"), 1L, getById("R-HSA-157239"), 1L)
 		);
 		final List<Interaction> interactions = InteractionExporter.stream(interactionExporter ->
 				interactionExporter.setObject("R-HSA-1911487")
@@ -105,9 +104,9 @@ class InteractionExporterTest {
 		// |    |    o EWAS:R-HSA-264470
 		// |    |    o EWAS:R-HSA-416464
 		final List<Interaction> expected = Arrays.asList(
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"), getById("R-HSA-157239"), 1L, getById("R-HSA-1604437"), 1L),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"), getById("R-HSA-1604437"), 1L, getById("R-HSA-157239"), 1L),
 				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"), getById("R-HSA-1604437"), 1L, getById("R-HSA-1983670"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-157027"), getById("R-HSA-157239"), 1L, getById("R-HSA-1983670"), 1L)
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-157027"), getById("R-HSA-1983670"), 1L, getById("R-HSA-157239"), 1L)
 		);
 		final List<Interaction> interactions = InteractionExporter.stream(interactionExporter ->
 				interactionExporter.setObject("R-HSA-1911487")
@@ -140,7 +139,7 @@ class InteractionExporterTest {
 		final List<Interaction> expected = Arrays.asList(
 				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-5210918"), getById("R-ALL-74112"), 2L, getById("R-HSA-5205722"), 1L),
 				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-5210918"), getById("R-BAN-5205707"), 1L, getById("R-HSA-5205722"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-BAN-5205716"), getById("R-ALL-74112"), 2L, getById("R-BAN-5205707"), 1L)
+				new Interaction(InteractionType.PHYSICAL, getById("R-BAN-5205716"), getById("R-BAN-5205707"), 1L, getById("R-ALL-74112"), 2L)
 		);
 		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
 				exporter.setObject("R-HSA-5210918")).collect(Collectors.toList());
@@ -184,9 +183,8 @@ class InteractionExporterTest {
 		// |    |    - EWAS:R-HSA-450328
 		// |    |    - EWAS:R-HSA-5218872
 		final List<Interaction> expected = Arrays.asList(
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-5218862"), getById("R-HSA-168651"), 1L, getById("R-HSA-450328"), 1L),
-
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-5218868"), getById("R-HSA-450328"), 1L, getById("R-HSA-5218872"), 1L),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-5218862"), getById("R-HSA-450328"), 1L, getById("R-HSA-168651"), 1L),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-5218868"), getById("R-HSA-5218872"), 1L, getById("R-HSA-450328"), 1L),
 
 				new Interaction(InteractionType.fromGo("GO:0004674"), getById("R-HSA-5213466"), getById("R-HSA-168651"), 1L, getById("R-HSA-450328"), 1L),
 				new Interaction(InteractionType.fromGo("GO:0004674"), getById("R-HSA-5213466"), getById("R-HSA-168651"), 1L, getById("R-HSA-5218872"), 1L),

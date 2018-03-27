@@ -26,7 +26,7 @@ class ExporterTest {
 	void printTree() {
 		ReactomeGraphCore.initialise("localhost", "7474", "neo4j", "reactome", GraphCoreConfig.class);
 		DatabaseObjectService OBJECT_SERVICE = ReactomeGraphCore.getService(DatabaseObjectService.class);
-		String stId = "R-HSA-3301345";
+		String stId = "R-HSA-5423117";
 		final DatabaseObject object = OBJECT_SERVICE.findById(stId);
 		expand(object, 1, 0, "");
 		System.out.println();

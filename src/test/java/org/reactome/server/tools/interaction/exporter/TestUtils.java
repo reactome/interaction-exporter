@@ -24,6 +24,7 @@ public class TestUtils {
 					final String message = String.format("At line %d%n - Expected:[%s]%n - Actual  :[%s]%n", n, expectedLine, resultLine);
 					Assertions.fail(message);
 				}
+				n += 1;
 			}
 			if (resultReader.readLine() != null)
 				Assertions.fail("No more lines expected at " + n);

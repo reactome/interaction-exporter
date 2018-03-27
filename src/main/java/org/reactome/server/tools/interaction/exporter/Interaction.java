@@ -60,7 +60,7 @@ public class Interaction {
 	@Override
 	public String toString() {
 		return "["
-				+ "type=" + type.getPsiName()
+				+ "type=" + type
 				+ ", context=" + context.getSchemaClass() + ":" + context.getStId()
 				+ ", a=" + a.getSchemaClass() + ":" + a.getStId() + "(" + ast + ")"
 				+ ", b=" + b.getSchemaClass() + ":" + b.getStId() + "(" + bst + ")"

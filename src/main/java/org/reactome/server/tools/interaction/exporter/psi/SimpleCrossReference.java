@@ -4,7 +4,7 @@ package org.reactome.server.tools.interaction.exporter.psi;
 import java.util.Map;
 import java.util.TreeMap;
 
-public final class CrossReference implements psidev.psi.mi.tab.model.CrossReference {
+public class SimpleCrossReference implements psidev.psi.mi.tab.model.CrossReference {
 
 	/**
 	 * This dictionary is case insensitive. Keys are the aliases, values are the
@@ -29,15 +29,19 @@ public final class CrossReference implements psidev.psi.mi.tab.model.CrossRefere
 		databases.put("refseq", "refseq");
 	}
 
-
 	private String database;
 	private String identifier;
 	private String text;
 
-	public CrossReference(String database, String identifier, String text) {
+	public SimpleCrossReference(String database, String identifier, String text) {
+		setDatabase(database);
+		setIdentifier(identifier);
+		this.text = text;
+	}
+
+	public SimpleCrossReference(String database, String identifier) {
 		setDatabase(database);
 		this.identifier = identifier;
-		this.text = text;
 	}
 
 	@Override
@@ -59,7 +63,9 @@ public final class CrossReference implements psidev.psi.mi.tab.model.CrossRefere
 
 	@Override
 	public void setIdentifier(String identifier) {
-		this.identifier = identifier;
+		if (database != null && database.equals("go") && !identifier.startsWith("GO:"))
+			this.identifier = "GO:" + identifier;
+		else this.identifier = identifier;
 	}
 
 	@Override
@@ -77,4 +83,8 @@ public final class CrossReference implements psidev.psi.mi.tab.model.CrossRefere
 		return text != null && !text.isEmpty();
 	}
 
+	@Override
+	public String toString() {
+		return String.join(":", database, identifier, text);
+	}
 }

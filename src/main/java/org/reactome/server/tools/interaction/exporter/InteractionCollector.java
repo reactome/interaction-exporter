@@ -140,10 +140,8 @@ public class InteractionCollector {
 	}
 
 	private void writeInteraction(InteractionType type, DatabaseObject context, PhysicalEntity A, long Ast, PhysicalEntity B, long Bst) {
-		if (A instanceof SimpleEntity && B instanceof SimpleEntity) return;
-		if (A.getStId().compareTo(B.getStId()) > 0)
-			writeInteraction(type, context, B, Bst, A, Ast);
-		else interactions.add(new Interaction(type, context, A, Ast, B, Bst));
+		if (!(A instanceof SimpleEntity && B instanceof SimpleEntity))
+			interactions.add(new Interaction(type, context, A, Ast, B, Bst));
 	}
 
 }

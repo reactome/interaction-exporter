@@ -2,9 +2,11 @@ package org.reactome.server.tools.interaction.exporter.writer;
 
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.tools.interaction.exporter.Interaction;
-import org.reactome.server.tools.interaction.exporter.psi.CrossReference;
+import org.reactome.server.tools.interaction.exporter.util.Constants;
 import org.reactome.server.tools.interaction.exporter.util.IdentifierResolver;
+import psidev.psi.mi.tab.model.CrossReference;
 
+import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.List;
@@ -26,9 +28,9 @@ public class TsvWriter implements InteractionWriter {
 	private static final String SECONDARY_SEPARATOR = "|";
 	private PrintStream output;
 
-	public TsvWriter(PrintStream output) {
-		this.output = output;
-		output.println("# " + String.join(SEPARATOR, COLUMNS));
+	public TsvWriter(OutputStream output) {
+		this.output = new PrintStream(output);
+		this.output.println("# " + String.join(SEPARATOR, COLUMNS));
 	}
 
 	@Override
@@ -112,7 +114,7 @@ public class TsvWriter implements InteractionWriter {
 		}
 		final CrossReference reactome = identifiers.stream()
 				.filter(reference -> reference.getDatabase() != null)
-				.filter(reference -> reference.getDatabase().equalsIgnoreCase("reactome"))
+				.filter(reference -> reference.getDatabase().equals(Constants.REACTOME))
 				.findFirst().orElse(null);
 		if (reactome != null)
 			return reactome;

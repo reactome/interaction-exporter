@@ -11,7 +11,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 
-public class TsvExporterTest {
+class TsvExporterTest {
 
 	@BeforeAll
 	static void beforeAll() {
@@ -21,11 +21,12 @@ public class TsvExporterTest {
 	@Test
 	void testReaction() {
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(2048);
-		final TsvWriter writer = new TsvWriter(new PrintStream(outputStream));
+		final TsvWriter writer = new TsvWriter(outputStream);
 		InteractionExporter.stream(exporter -> exporter.setObject("R-HSA-5213466"))
 				.forEach(writer::write);
 		final InputStream result = new ByteArrayInputStream(outputStream.toByteArray());
 		final InputStream expected = TsvExporterTest.class.getResourceAsStream("tsv-result-1.txt");
+		System.out.println(new String(outputStream.toByteArray()));
 		TestUtils.assertEquals(expected, result);
 	}
 
