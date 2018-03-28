@@ -179,3 +179,58 @@ The type of this interaction depends on the GO-Molecular-function term associate
 
 BlackBoxEvents are ignored.
 
+### PSI-MITAB output
+Results are exported using PSI-MITAB version 27. 
+
+column | name | multiplicity | value (db:id:text) | description
+--- | --- | --- | --- | ---
+1, 2 | interactor unique identifier | 1 | (ChEBI, reactome, uniprotkb):(\*) | uniprotkb for proteins, ChEBI for small molecules, reactome as default
+3, 4 | interactor alternative identifiers | 0..* | (\*):(\*) | any other identifier
+5, 6 | interactor aliases | 0..* |(reactome):(\*):(name) | entity.names if !name.contains("\n") && !name.contains(":")
+7 | interaction detection methods | 1 |(psi-mi):(MI:0364):(inferred by curator) |constant
+8 | first author | 1..* | (\*) | context.literatureReferences.author
+9 | publication identifier | 1..* | (\*) | context.literatureReferences.pubmedIdentifier
+10, 11 | interactor taxonomy | 1..* | (taxid):(\*) |interactor.species
+12 | Interaction types | 1 |(psi-mi):(\*):(\*) | physical for complex/polymer/inputs, reaction.catalyst.activity for reactions
+13 | Source databases | 1 |(psi-mi):(MI:0467):(reactome)
+14 | Interaction identifiers | 1 | (reactome):(\*)| context.stId
+15 | Confidence score | 1 |(reactome-score):(\*) | 0.4 if context is inferred, otherwise 0.5
+16 | Complex expansion | 0..1 | (psi-mi):(MI:1061):(matrix expansion) | matrix expansion for complex/polymer/input. empty for catalyst interactions
+17, 18 | Biological roles | 1 | (psi-mi):(MI:0499,  MI:0501,  MI:0502):(enzyme,  enzyme target,  unspecified role) | if context is complex/polymer -> unspecified for complex/polymer/inputs. enzyme/enzyme target for catalyst/input pairs
+19, 20 | Experimental roles | 1 |(psi-mi):(MI:0499):(unspecified role) | constant
+21, 22 | Interactors type | 0..1 | (psi-mi):(\*):(\*) | biopolymer,  complex,  desoxyribonucleic acid,  protein,  ribonucleic acid,  small molecule
+23, 24 | interactors Xref | 1..* | (go):(\*):(\*) |interactors.compartments
+25 | interaction Xref | 1..* | (go):(\*):(\*) |context.compartments, context.catalyst.activity
+26, 27 | interactors annotations | 0 | - | empty
+28 | interaction annotations | 0 | - | empty
+29 | interaction taxonomy | 1 | (taxid):(\*):(\*) |context.species
+30 | interaction parameters | 0 | - | empty
+31 | Creation date | 0..1 | (\*) | context.created
+32 | Update date | 0..1 | (\*) | context.modified
+33, 34 | interactors checksum | 0 | - | empty
+35 | interaction checksum | 0 | - | empty
+36 | negative | 1 | false | false
+37, 38 | interactors features | 0..* | (\*):(\*):(\*) |TranslationalModification in interactor.hasModifiedResidue
+39, 40 | interactors stoichiometry | 1 | (\*) | (n, n) for complex/input. (0, n) for olygomer. (0, 0) for polymer. (1, n) for catalyst/input
+41, 42 | interactor identification method | 1 | (psi-mi):(MI:0364):(inferred by curator) | constant
+
+#### TSV format
+A lighter format with minimum information. We highly encourage using PSI-MITAB standard format.
+
+column | name | multiplicity | value | source
+--- | --- | --- | --- | ---
+1, 4 | interactor uniprot id | 1..* | (ChEBI, reactome, uniprotkb):(\*) | uniprotkb for proteins, ChEBI for small molecules, reactome as default
+2, 5 | interactor esembl id | 0..* | (ENSEMBL):(\*) | identifiers matching ENSG#######
+3, 6 | interactor EntrezGene | 0..* | (EntrezGene):(\*) | identifiers matching EntrezGene:#####
+7 |  Interaction type | 0..1 | (complex,  reaction) | context.class (empty if not complex or reaction)
+8 | Interaction context | 1 | (\*) | context.stId
+9 | Pubmed references | 0..* | (\*) | context.literatureReferences
+
+
+
+
+
+
+
+
+
