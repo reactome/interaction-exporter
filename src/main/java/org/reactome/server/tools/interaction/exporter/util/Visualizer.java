@@ -1,44 +1,41 @@
-package org.reactome.server.tools.interaction.exporter;
+package org.reactome.server.tools.interaction.exporter.util;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
-import org.reactome.server.tools.interaction.exporter.util.GraphCoreConfig;
 
+import java.io.PrintStream;
 import java.util.Map;
 import java.util.TreeMap;
 
-class ExporterTest {
+/**
+ * Allows you to visualise the hierarchy tree of any DatabaseObject.
+ */
+@SuppressWarnings("unused")
+public class Visualizer {
 
-	private static final String format = "%s %s%s:%s";
+	// FORMAT = prefix [stoichiometry]class:id[trivial]
+	// prefix = +-oic
+	// stoichiometry = s x
+	// class = entity.schemaClass
+	// id = entity.stId
+	// trivial = (trivial)
+	private static final String FORMAT = "%s %s%s:%s%s";
 
-	@BeforeAll
-	static void beforeAll() {
-		ReactomeGraphCore.initialise("localhost", "7474", "neo4j", "reactome", GraphCoreConfig.class);
+	static void printTree(String stId) {
+		printTree(stId, System.out);
 	}
 
-	/**
-	 * Utility to see the tree of a Complex/Reaction/Polymer in the System.out.
-	 */
-	@Test
-	void printTree() {
-		ReactomeGraphCore.initialise("localhost", "7474", "neo4j", "reactome", GraphCoreConfig.class);
-		DatabaseObjectService OBJECT_SERVICE = ReactomeGraphCore.getService(DatabaseObjectService.class);
-		String stId = "R-HSA-8853798";
-		final DatabaseObject object = OBJECT_SERVICE.findById(stId);
-		expand(object, 1, 0, "");
-		System.out.println();
-		InteractionExporter.stream(exporter -> exporter
-				.setMaxUnitSize(15)
-				.setObject(stId))
-				.forEach(System.out::println);
+	static void printTree(String stId, PrintStream printStream) {
+		final DatabaseObjectService service = ReactomeGraphCore.getService(DatabaseObjectService.class);
+		final DatabaseObject object = service.findById(stId);
+		expand(printStream, object, 1, 0, "");
+		printStream.println();
 	}
 
-	private void expand(DatabaseObject entity, int stoichiometry, int level, String prefix) {
+	private static void expand(PrintStream printStream, DatabaseObject entity, int stoichiometry, int level, String prefix) {
 		final Map<String, Map<PhysicalEntity, Integer>> children = participants(entity);
-		for (int i = 0; i < level; i++) System.out.print("|    ");
+		for (int i = 0; i < level; i++) printStream.print("|    ");
 		if (prefix.isEmpty()) prefix = children.isEmpty() ? "-" : "+";
 		final String st = stoichiometry == 1 ? "" : stoichiometry + " x ";
 		final String t = (entity instanceof SimpleEntity)
@@ -46,17 +43,17 @@ class ExporterTest {
 				&& ((SimpleEntity) entity).getReferenceEntity().getTrivial() != null
 				&& ((SimpleEntity) entity).getReferenceEntity().getTrivial()
 				? " (trivial)" : "";
-		System.out.println(String.format(format, prefix, st, simpleSchemaClass(entity), entity.getStId()) + t);
-		children.forEach((rol, map) -> map.forEach((child, s) -> expand(child, s, level + 1, rol)));
+		printStream.println(String.format(FORMAT, prefix, st, simpleSchemaClass(entity), entity.getStId(), t));
+		children.forEach((rol, map) -> map.forEach((child, s) -> expand(printStream, child, s, level + 1, rol)));
 	}
 
-	private String simpleSchemaClass(DatabaseObject entity) {
+	private static String simpleSchemaClass(DatabaseObject entity) {
 		if (entity.getSchemaClass().equals("EntityWithAccessionedSequence"))
 			return "EWAS";
 		return entity.getSchemaClass();
 	}
 
-	private Map<String, Map<PhysicalEntity, Integer>> participants(DatabaseObject object) {
+	private static Map<String, Map<PhysicalEntity, Integer>> participants(DatabaseObject object) {
 		final Map<String, Map<PhysicalEntity, Integer>> participants = new TreeMap<>();
 		if (object instanceof Complex) {
 			final Complex complex = (Complex) object;
@@ -89,7 +86,6 @@ class ExporterTest {
 					if (activity.getActiveUnit() != null)
 						activity.getActiveUnit().forEach(activeUnit -> active.put(activeUnit, map.getOrDefault(activeUnit, 0) + 1));
 					map.put(activity.getPhysicalEntity(), map.getOrDefault(activity.getPhysicalEntity(), 0) + 1);
-
 				}
 			}
 		}

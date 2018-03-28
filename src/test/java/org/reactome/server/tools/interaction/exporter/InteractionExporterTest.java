@@ -25,7 +25,6 @@ class InteractionExporterTest {
 		return a.getContext().getStId().compareTo(b.getContext().getStId());
 	};
 
-
 	@BeforeEach
 	void beforeEach() {
 		Assumptions.assumeTrue(hasConnection());
