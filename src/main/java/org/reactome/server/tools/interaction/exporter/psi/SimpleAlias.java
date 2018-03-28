@@ -5,7 +5,7 @@ public class SimpleAlias implements psidev.psi.mi.tab.model.Alias {
 	private String name;
 	private String aliasType;
 
-	public SimpleAlias(String dbSource, String name, String aliasType) {
+	SimpleAlias(String dbSource, String name, String aliasType) {
 		this.dbSource = dbSource;
 		this.name = name;
 		this.aliasType = aliasType;

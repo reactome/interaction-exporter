@@ -7,20 +7,18 @@ import psidev.psi.mi.tab.model.CrossReference;
 
 import java.util.*;
 
-public class InteractionCollector {
+class InteractionCollector {
 
 	private IncludeSimpleEntity includeSimpleEntity;
-	private String species;
 	private int maxUnitSize;
 	private Collection<Interaction> interactions;
 
-	InteractionCollector(IncludeSimpleEntity includeSimpleEntity, String species, int maxUnitSize) {
+	InteractionCollector(IncludeSimpleEntity includeSimpleEntity, int maxUnitSize) {
 		this.includeSimpleEntity = includeSimpleEntity;
-		this.species = species;
 		this.maxUnitSize = maxUnitSize;
 	}
 
-	public Collection<Interaction> explore(DatabaseObject object) {
+	Collection<Interaction> explore(DatabaseObject object) {
 		interactions = new LinkedHashSet<>();
 		if (object instanceof Polymer)
 			explorePolymer((Polymer) object);

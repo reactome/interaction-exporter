@@ -14,6 +14,10 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Reads the GO file, and create the hierarchy of GoTerms only following the
+ * is_a field.
+ */
 public class GoTree {
 
 	private final static Pattern IS_A_PATTERN = Pattern.compile("is_a:\\s+(GO:\\d+)");

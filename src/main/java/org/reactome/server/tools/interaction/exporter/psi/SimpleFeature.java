@@ -12,7 +12,7 @@ public class SimpleFeature implements Feature {
 	private List<String> ranges;
 	private String text;
 
-	public SimpleFeature(TranslationalModification residue) {
+	SimpleFeature(TranslationalModification residue) {
 		setFeatureType(residue.getPsiMod().getName().get(0));
 		setText("MOD:" + residue.getPsiMod().getIdentifier());
 		if (residue.getCoordinate() != null)

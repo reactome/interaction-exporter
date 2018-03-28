@@ -61,7 +61,7 @@ public class InteractionExporter {
 	}
 
 	private Stream<Interaction> stream() {
-		collector = new InteractionCollector(includeSimpleEntity, species, maxUnitSize);
+		collector = new InteractionCollector(includeSimpleEntity, maxUnitSize);
 		if (stId != null) {
 			final DatabaseObject object = OBJECT_SERVICE.findById(stId);
 			final Collection<DatabaseObject> subContexts = collectContexts(object);

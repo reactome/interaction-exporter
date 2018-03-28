@@ -77,21 +77,21 @@ public class InteractionType extends SimpleCrossReference {
 
 	}
 
-	public static InteractionType fromGo(String go) {
+	static InteractionType fromGo(String go) {
 		return types.stream()
 				.filter(type -> type.getGoId().contains(go))
 				.findFirst()
 				.orElse(DEFAULT_TYPE);
 	}
 
-	public static InteractionType fromPsiMi(String psiId) {
+	static InteractionType fromPsiMi(String psiId) {
 		return types.stream()
 				.filter(type -> type.getIdentifier().equals(psiId))
 				.findFirst()
 				.orElse(DEFAULT_TYPE);
 	}
 
-	public Set<String> getGoId() {
+	private Set<String> getGoId() {
 		return goId;
 	}
 

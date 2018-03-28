@@ -8,14 +8,12 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class Unit {
+class Unit {
 
 	private final Map<PhysicalEntity, Long> children;
 	private final long unitSize;
-	private final DatabaseObject object;
 
-	public Unit(DatabaseObject object, IncludeSimpleEntity includeSimpleEntity) {
-		this.object = object;
+	Unit(DatabaseObject object, IncludeSimpleEntity includeSimpleEntity) {
 		children = children(object, includeSimpleEntity).stream()
 				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 		unitSize = unitSize(object);
@@ -25,11 +23,11 @@ public class Unit {
 	 * Returns a map, where each entry is a unique PhysicalEntity with the
 	 * repetitions of it in the list of children.
 	 */
-	public Map<PhysicalEntity, Long> getChildren() {
+	Map<PhysicalEntity, Long> getChildren() {
 		return children;
 	}
 
-	public long getUnitSize() {
+	long getUnitSize() {
 		return unitSize;
 	}
 
@@ -133,7 +131,7 @@ public class Unit {
 			components.putAll(a.components);
 		}
 
-		public Map<PhysicalEntity, Integer> getComponents() {
+		Map<PhysicalEntity, Integer> getComponents() {
 			return components;
 		}
 

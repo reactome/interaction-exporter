@@ -14,21 +14,6 @@ import java.util.stream.Collectors;
 
 public class IdentifierResolver {
 
-	/*
-	CHEBI("ChEBI", "MI:0474", new String[]{"ChEBI", "chebi", "CHEBI"}),
-    CHEMBL("chembl", "MI:1349", new String[]{"CHEMBL", "chembl"}),
-    EMBL("EMBL", "MI:0475", new String[]{}),
-    ENSEMBL("ENSEMBL", "MI:0476", new String[]{"Ensembl","ENSEMBL"}),
-    ENTREZ_GENE("entrezgene/locuslink", "MI:0477", new String[]{"Entrez gene/locuslink","EntrezGene"}),
-    GO("go", "MI:0448", new String[]{"go", "GO"}),
-    INTACT("IntAct", "MI:0469", new String[]{"IntAct"}),
-    PDBE("pdbe", "MI:0472", new String[]{"Protein Data Bank"}),
-    PSIMI("psi-mi", "MI:0488", new String[]{}),
-    PUBMED("pubmed", "MI:0446", new String[]{}),
-    REACTOME("reactome", "MI:0467", new String[]{"reactome"}),
-    REFSEQ("refseq", "MI:0481", new String[]{"RefSeq"}),
-    UNIPROTKB("uniprotkb", "MI:0486", new String[]{"UniProt"});
-	 */
 	private static final List<String> validDatabases = Arrays.asList("ChEBI",
 			"chembl", "EMBL", "ENSEMBL", "entrezgene/locuslink", "go", "IntAct",
 			"pdbe", "psi-mi", "pubmed", "reactome", "refseq", "uniprotkb");

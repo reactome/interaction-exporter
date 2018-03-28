@@ -5,7 +5,7 @@ import psidev.psi.mi.tab.model.Author;
 public class SimpleAuthor implements Author {
 	private String name;
 
-	public SimpleAuthor(String name) {
+	SimpleAuthor(String name) {
 		this.name = name;
 	}
 
