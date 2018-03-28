@@ -36,10 +36,10 @@ public class TsvWriter implements InteractionWriter {
 	@Override
 	public void write(Interaction interaction) {
 		final String[] line = new String[COLUMNS.size()];
-		List<CrossReference> aIdentifiers = IdentifierResolver.getIdentifiers(interaction.getA());
-		List<CrossReference> bIdentifiers = IdentifierResolver.getIdentifiers(interaction.getB());
-		final CrossReference aPrimaryIdentifier = primaryIdentifier(interaction.getA(), aIdentifiers);
-		final CrossReference bPrimaryIdentifier = primaryIdentifier(interaction.getB(), bIdentifiers);
+		List<CrossReference> aIdentifiers = IdentifierResolver.getIdentifiers(interaction.getA().getEntity());
+		List<CrossReference> bIdentifiers = IdentifierResolver.getIdentifiers(interaction.getB().getEntity());
+		final CrossReference aPrimaryIdentifier = primaryIdentifier(interaction.getA().getEntity(), aIdentifiers);
+		final CrossReference bPrimaryIdentifier = primaryIdentifier(interaction.getB().getEntity(), bIdentifiers);
 		line[0] = toString(aPrimaryIdentifier);
 		line[1] = ensemblIdentifier(aIdentifiers);
 		line[2] = entrezGeneIdentifier(aIdentifiers);

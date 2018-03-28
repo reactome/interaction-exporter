@@ -2,6 +2,8 @@ package org.reactome.server.tools.interaction.exporter;
 
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.tools.interaction.exporter.filter.IncludeSimpleEntity;
+import org.reactome.server.tools.interaction.exporter.util.Constants;
+import psidev.psi.mi.tab.model.CrossReference;
 
 import java.util.*;
 
@@ -140,8 +142,19 @@ public class InteractionCollector {
 	}
 
 	private void writeInteraction(InteractionType type, DatabaseObject context, PhysicalEntity A, long Ast, PhysicalEntity B, long Bst) {
+		CrossReference aRole;
+		CrossReference bRole;
+		if (type != InteractionType.PHYSICAL) {
+			aRole = Constants.ENZYME;
+			bRole = Constants.ENZYME_TARGET;
+		} else {
+			aRole = Constants.UNSPECIFIED_ROLE;
+			bRole = Constants.UNSPECIFIED_ROLE;
+		}
 		if (!(A instanceof SimpleEntity && B instanceof SimpleEntity))
-			interactions.add(new Interaction(type, context, A, Ast, B, Bst));
+			interactions.add(new Interaction(type, context,
+					new Interactor(A, Ast, aRole),
+					new Interactor(B, Bst, bRole)));
 	}
 
 }

@@ -1,46 +1,34 @@
 package org.reactome.server.tools.interaction.exporter;
 
 import jdk.nashorn.internal.ir.annotations.Ignore;
-import org.junit.jupiter.api.*;
-import org.neo4j.ogm.drivers.http.request.HttpRequestException;
-import org.reactome.server.graph.domain.model.DatabaseObject;
-import org.reactome.server.graph.service.DatabaseObjectService;
-import org.reactome.server.graph.utils.ReactomeGraphCore;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.reactome.server.tools.interaction.exporter.filter.IncludeSimpleEntity;
-import org.reactome.server.tools.interaction.exporter.util.GraphCoreConfig;
+import org.reactome.server.tools.interaction.exporter.util.Constants;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static org.reactome.server.tools.interaction.exporter.TestUtils.getById;
+import static org.reactome.server.tools.interaction.exporter.TestUtils.hasConnection;
+
 class InteractionExporterTest {
 
 	private static final String HOMO_SAPIENS = "Homo sapiens";
-	private static DatabaseObjectService object_service;
-	private static boolean connection;
-	private Map<String, ? extends DatabaseObject> cache = new LinkedHashMap<>();
 	private Comparator<? super Interaction> sorter = (a, b) -> {
-		int compare = a.getA().compareTo(b.getA());
+		int compare = a.getA().getEntity().compareTo(b.getA().getEntity());
 		if (compare != 0) return compare;
-		compare = a.getB().compareTo(b.getB());
+		compare = a.getB().getEntity().compareTo(b.getB().getEntity());
 		if (compare != 0) return compare;
 		return a.getContext().getStId().compareTo(b.getContext().getStId());
 	};
 
-	@BeforeAll
-	static void beforeAll() {
-		ReactomeGraphCore.initialise("localhost", "7474", "neo4j", "reactome", GraphCoreConfig.class);
-		object_service = ReactomeGraphCore.getService(DatabaseObjectService.class);
-		try {
-			object_service.findById("R-HSA-110576");
-			connection = true;
-		} catch (HttpRequestException e) {
-			connection = false;
-		}
-	}
 
 	@BeforeEach
 	void beforeEach() {
-		Assumptions.assumeTrue(connection);
+		Assumptions.assumeTrue(hasConnection());
 	}
 
 	@Test
@@ -53,7 +41,9 @@ class InteractionExporterTest {
 						.setObject(stId))
 				.collect(Collectors.toList());
 		final List<Interaction> expected = Arrays.asList(
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-110576"), getById("R-HSA-60024"), 6L, getById("R-HSA-60024"), 0L)
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-110576"),
+						new Interactor(getById("R-HSA-60024"), 6L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-60024"), 0L, Constants.UNSPECIFIED_ROLE))
 		);
 		assertEquals(expected, interactions);
 	}
@@ -73,15 +63,33 @@ class InteractionExporterTest {
 		|    |    o EWAS:R-HSA-416464
 		 */
 		final List<Interaction> expected = Arrays.asList(
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"), getById("R-HSA-157239"), 1L, getById("R-HSA-264470"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"), getById("R-HSA-1983670"), 1L, getById("R-HSA-264470"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"), getById("R-HSA-1604437"), 1L, getById("R-HSA-264470"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"), getById("R-HSA-157239"), 1L, getById("R-HSA-416464"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"), getById("R-HSA-1983670"), 1L, getById("R-HSA-416464"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"), getById("R-HSA-1604437"), 1L, getById("R-HSA-416464"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"), getById("R-HSA-1604437"), 1L, getById("R-HSA-157239"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"), getById("R-HSA-1604437"), 1L, getById("R-HSA-1983670"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-157027"), getById("R-HSA-1983670"), 1L, getById("R-HSA-157239"), 1L)
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"),
+						new Interactor(getById("R-HSA-157239"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-264470"), 1L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"),
+						new Interactor(getById("R-HSA-1983670"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-264470"), 1L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"),
+						new Interactor(getById("R-HSA-1604437"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-264470"), 1L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"),
+						new Interactor(getById("R-HSA-157239"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-416464"), 1L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"),
+						new Interactor(getById("R-HSA-1983670"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-416464"), 1L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1911487"),
+						new Interactor(getById("R-HSA-1604437"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-416464"), 1L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"),
+						new Interactor(getById("R-HSA-1604437"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-157239"), 1L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"),
+						new Interactor(getById("R-HSA-1604437"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-1983670"), 1L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-157027"),
+						new Interactor(getById("R-HSA-1983670"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-157239"), 1L, Constants.UNSPECIFIED_ROLE))
 		);
 		final List<Interaction> interactions = InteractionExporter.stream(interactionExporter ->
 				interactionExporter.setObject("R-HSA-1911487")
@@ -104,9 +112,15 @@ class InteractionExporterTest {
 		// |    |    o EWAS:R-HSA-264470
 		// |    |    o EWAS:R-HSA-416464
 		final List<Interaction> expected = Arrays.asList(
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"), getById("R-HSA-1604437"), 1L, getById("R-HSA-157239"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"), getById("R-HSA-1604437"), 1L, getById("R-HSA-1983670"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-157027"), getById("R-HSA-1983670"), 1L, getById("R-HSA-157239"), 1L)
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"),
+						new Interactor(getById("R-HSA-1604437"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-157239"), 1L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"),
+						new Interactor(getById("R-HSA-1604437"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-1983670"), 1L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-157027"),
+						new Interactor(getById("R-HSA-1983670"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-157239"), 1L, Constants.UNSPECIFIED_ROLE))
 		);
 		final List<Interaction> interactions = InteractionExporter.stream(interactionExporter ->
 				interactionExporter.setObject("R-HSA-1911487")
@@ -137,9 +151,15 @@ class InteractionExporterTest {
 		// |    i CandidateSet:R-HSA-5209996(1)
 		// |    |    o EWAS:R-HSA-5205722(1)
 		final List<Interaction> expected = Arrays.asList(
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-5210918"), getById("R-ALL-74112"), 2L, getById("R-HSA-5205722"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-5210918"), getById("R-BAN-5205707"), 1L, getById("R-HSA-5205722"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-BAN-5205716"), getById("R-BAN-5205707"), 1L, getById("R-ALL-74112"), 2L)
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-5210918"),
+						new Interactor(getById("R-ALL-74112"), 2L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-5205722"), 1L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-5210918"),
+						new Interactor(getById("R-BAN-5205707"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-5205722"), 1L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-BAN-5205716"),
+						new Interactor(getById("R-BAN-5205707"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-ALL-74112"), 2L, Constants.UNSPECIFIED_ROLE))
 		);
 		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
 				exporter.setObject("R-HSA-5210918")).collect(Collectors.toList());
@@ -159,11 +179,21 @@ class InteractionExporterTest {
 		// |    |    - EWAS:R-MTU-1222724(2)
 		// |    i SimpleEntity:R-ALL-1222525(2)
 		final List<Interaction> expected = Arrays.asList(
-				new Interaction(InteractionType.PHYSICAL, getById("R-MTU-1222294"), getById("R-ALL-71185"), 2L, getById("R-MTU-1222724"), 2L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-MTU-1222294"), getById("R-MTU-1222724"), 2L, getById("R-MTU-1222724"), 0L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1222723"), getById("R-ALL-1222525"), 2L, getById("R-MTU-1222724"), 2L),
-				new Interaction(InteractionType.fromGo("GO:0008941"), getById("R-HSA-1222723"), getById("R-ALL-71185"), 2L, getById("R-MTU-1222724"), 2L),
-				new Interaction(InteractionType.fromGo("GO:0008941"), getById("R-HSA-1222723"), getById("R-MTU-1222724"), 2L, getById("R-MTU-1222724"), 2L)
+				new Interaction(InteractionType.PHYSICAL, getById("R-MTU-1222294"),
+						new Interactor(getById("R-ALL-71185"), 2L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-MTU-1222724"), 2L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-MTU-1222294"),
+						new Interactor(getById("R-MTU-1222724"), 2L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-MTU-1222724"), 0L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1222723"),
+						new Interactor(getById("R-ALL-1222525"), 2L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-MTU-1222724"), 2L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.fromGo("GO:0008941"), getById("R-HSA-1222723"),
+						new Interactor(getById("R-ALL-71185"), 2L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-MTU-1222724"), 2L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.fromGo("GO:0008941"), getById("R-HSA-1222723"),
+						new Interactor(getById("R-MTU-1222724"), 2L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-MTU-1222724"), 2L, Constants.UNSPECIFIED_ROLE))
 		);
 		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
 				exporter.setObject("R-HSA-1222723")).collect(Collectors.toList());
@@ -183,22 +213,29 @@ class InteractionExporterTest {
 		// |    |    - EWAS:R-HSA-450328
 		// |    |    - EWAS:R-HSA-5218872
 		final List<Interaction> expected = Arrays.asList(
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-5218862"), getById("R-HSA-450328"), 1L, getById("R-HSA-168651"), 1L),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-5218868"), getById("R-HSA-5218872"), 1L, getById("R-HSA-450328"), 1L),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-5218862"),
+						new Interactor(getById("R-HSA-450328"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-168651"), 1L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-5218868"),
+						new Interactor(getById("R-HSA-5218872"), 1L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-450328"), 1L, Constants.UNSPECIFIED_ROLE)),
 
-				new Interaction(InteractionType.fromGo("GO:0004674"), getById("R-HSA-5213466"), getById("R-HSA-168651"), 1L, getById("R-HSA-450328"), 1L),
-				new Interaction(InteractionType.fromGo("GO:0004674"), getById("R-HSA-5213466"), getById("R-HSA-168651"), 1L, getById("R-HSA-5218872"), 1L),
-				new Interaction(InteractionType.fromGo("GO:0004674"), getById("R-HSA-5213466"), getById("R-HSA-450328"), 1L, getById("R-HSA-450328"), 1L),
-				new Interaction(InteractionType.fromGo("GO:0004674"), getById("R-HSA-5213466"), getById("R-HSA-450328"), 1L, getById("R-HSA-5218872"), 1L)
+				new Interaction(InteractionType.fromGo("GO:0004674"), getById("R-HSA-5213466"),
+						new Interactor(getById("R-HSA-168651"), 1L, Constants.ENZYME),
+						new Interactor(getById("R-HSA-450328"), 1L, Constants.ENZYME_TARGET)),
+				new Interaction(InteractionType.fromGo("GO:0004674"), getById("R-HSA-5213466"),
+						new Interactor(getById("R-HSA-168651"), 1L, Constants.ENZYME),
+						new Interactor(getById("R-HSA-5218872"), 1L, Constants.ENZYME_TARGET)),
+				new Interaction(InteractionType.fromGo("GO:0004674"), getById("R-HSA-5213466"),
+						new Interactor(getById("R-HSA-450328"), 1L, Constants.ENZYME),
+						new Interactor(getById("R-HSA-450328"), 1L, Constants.ENZYME_TARGET)),
+				new Interaction(InteractionType.fromGo("GO:0004674"), getById("R-HSA-5213466"),
+						new Interactor(getById("R-HSA-450328"), 1L, Constants.ENZYME),
+						new Interactor(getById("R-HSA-5218872"), 1L, Constants.ENZYME_TARGET))
 		);
 		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
 				exporter.setObject("R-HSA-5213466")).collect(Collectors.toList());
 		assertEquals(expected, interactions);
-	}
-
-
-	private <T extends DatabaseObject> T getById(String identifier) {
-		return (T) cache.computeIfAbsent(identifier, id -> object_service.findById(id));
 	}
 
 	private void assertEquals(List<Interaction> expected, List<Interaction> interactions) {

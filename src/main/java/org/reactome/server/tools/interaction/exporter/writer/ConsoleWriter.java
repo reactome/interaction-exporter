@@ -17,7 +17,7 @@ public class ConsoleWriter implements InteractionWriter {
 		output.println(String.join("\t",
 				interaction.getType().getText(),
 				String.format("%s:%s", interaction.getContext().getSchemaClass(), interaction.getContext().getStId()),
-				String.format("%s:%s", interaction.getA().getClass().getSimpleName(), interaction.getA().getStId(), interaction.getAst()),
-				String.format("%s:%s", interaction.getB().getClass().getSimpleName(), interaction.getB().getStId(), interaction.getBst())));
+				String.format("%s:%s", interaction.getA().getClass().getSimpleName(), interaction.getA().getEntity().getStId(), interaction.getA().getStoichiometry()),
+				String.format("%s:%s", interaction.getB().getClass().getSimpleName(), interaction.getB().getEntity().getStId(), interaction.getB().getStoichiometry())));
 	}
 }

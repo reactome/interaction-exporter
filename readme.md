@@ -118,7 +118,7 @@ One interaction is inferred from each polymer: the repeated unit with itself. Th
 ```
 Context | Interactor A | Interactor B|Type
 ---|---|---|---
-Complex1|0 x EWAS1|0 x EWAS1|Physical
+Polymer1|0 x EWAS1|0 x EWAS1|Physical
 
 Of course, if the repeated unit of a polymer is a complex or an entity set, it must be divided.
 ```
