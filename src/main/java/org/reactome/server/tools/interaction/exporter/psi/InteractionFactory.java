@@ -34,8 +34,6 @@ public class InteractionFactory {
 
 	private static Interactor createInteractor(org.reactome.server.tools.interaction.exporter.Interactor inter) {
 		final PhysicalEntity entity = inter.getEntity();
-		final Long stoichometry = inter.getStoichiometry();
-		final CrossReference role = inter.getBiologicalRole();
 		final Interactor interactor = new Interactor();
 		final List<CrossReference> identifiers = IdentifierResolver.getIdentifiers(entity);
 		final CrossReference primaryIdentifier = primaryIdentifier(entity, identifiers);
@@ -43,13 +41,13 @@ public class InteractionFactory {
 		interactor.setIdentifiers(Collections.singletonList(primaryIdentifier));
 		interactor.setAlternativeIdentifiers(new LinkedList<>(identifiers));
 		interactor.setAliases(getAlias(entity));
-		interactor.setStoichiometry(Collections.singletonList(stoichometry.intValue()));
-		interactor.setBiologicalRoles(Collections.singletonList(role));
+		interactor.setStoichiometry(Collections.singletonList(inter.getStoichiometry().intValue()));
+		interactor.setBiologicalRoles(Collections.singletonList(inter.getBiologicalRole()));
 		interactor.setExperimentalRoles(Collections.singletonList(Constants.UNSPECIFIED_ROLE));
 		interactor.setOrganism(getOrganism(entity));
 		interactor.setParticipantIdentificationMethods(Collections.singletonList(Constants.INFERRED_BY_CURATOR));
 		interactor.setInteractorTypes(Collections.singletonList(getInteractorType(entity)));
-		interactor.setXrefs(getXrefs(entity, null));
+		interactor.setXrefs(getXrefs(entity));
 		interactor.setFeatures(getFeatures(entity));
 //		interactor.setAnnotations();
 //		interactor.setChecksums();
@@ -128,13 +126,19 @@ public class InteractionFactory {
 		return identifiers.get(0);
 	}
 
-	private static List<CrossReference> getXrefs(DatabaseObject entity, GO_MolecularFunction activity) {
+	private static List<CrossReference> getXrefs(DatabaseObject entity) {
 		// molecular function
 		// cellular components
 		//
 		final List<CrossReference> references = new LinkedList<>();
-		if (activity != null)
-			references.add(new SimpleCrossReference(activity.getDatabaseName(), activity.getAccession(), activity.getName()));
+		if (entity instanceof ReactionLikeEvent) {
+			final ReactionLikeEvent reaction = (ReactionLikeEvent) entity;
+			if (reaction.getCatalystActivity() != null) {
+				final GO_MolecularFunction activity = reaction.getCatalystActivity().get(0).getActivity();
+				if (activity != null)
+					references.add(new SimpleCrossReference(activity.getDatabaseName(), activity.getAccession(), activity.getName()));
+			}
+		}
 		List<? extends Compartment> compartments = null;
 		if (entity instanceof PhysicalEntity) {
 			compartments = ((PhysicalEntity) entity).getCompartment();
@@ -163,8 +167,8 @@ public class InteractionFactory {
 	}
 
 	private static void configure(BinaryInteraction psiInteraction, Interaction interaction) {
-		psiInteraction.setCreationDate(Collections.singletonList(createDate(interaction.getContext().getCreated())));
-		psiInteraction.setUpdateDate(Collections.singletonList(createDate(interaction.getContext().getModified())));
+		psiInteraction.setCreationDate(getDate(interaction.getContext().getCreated()));
+		psiInteraction.setUpdateDate(getDate(interaction.getContext().getModified()));
 		psiInteraction.setAuthors(getAuthors(interaction.getContext()));
 		psiInteraction.setHostOrganism(getOrganism(interaction.getContext()));
 		psiInteraction.setPublications(getPublications(interaction.getContext()));
@@ -174,12 +178,23 @@ public class InteractionFactory {
 		psiInteraction.setInteractionTypes(Collections.singletonList(interaction.getType()));
 		psiInteraction.setConfidenceValues(getConfidence(interaction.getContext()));
 		psiInteraction.setInteractionAcs(Collections.singletonList(new SimpleCrossReference(Constants.REACTOME, interaction.getContext().getStId())));
+		psiInteraction.setXrefs(getXrefs(interaction.getContext()));
 //		psiInteraction.setNegativeInteraction(false);
-		final GO_MolecularFunction activity = interaction.getContext() instanceof ReactionLikeEvent ? ((ReactionLikeEvent) interaction.getContext()).getCatalystActivity().get(0).getActivity() : null;
-		psiInteraction.setXrefs(getXrefs(interaction.getContext(), activity));
 //		psiInteraction.setChecksums();
 //		psiInteraction.setParameters();
 //		psiInteraction.setAnnotations();
+	}
+
+	private static List<Date> getDate(InstanceEdit created) {
+		if (created == null)
+			return null;
+		try {
+			final Date result = DATE_FORMAT.parse(created.getDateTime());
+			return Collections.singletonList(result);
+		} catch (ParseException e) {
+			logger.warning("Date format not valid: " + created.getDateTime());
+		}
+		return null;
 	}
 
 	private static List<CrossReference> getPublications(DatabaseObject context) {
@@ -187,6 +202,7 @@ public class InteractionFactory {
 		return references.stream()
 				.filter(LiteratureReference.class::isInstance)
 				.map(LiteratureReference.class::cast)
+				.filter(publication -> publication.getPubMedIdentifier() != null)
 				.map(publication -> new SimpleCrossReference(Constants.PUBMED, publication.getPubMedIdentifier().toString(), null))
 				.collect(Collectors.toList());
 	}
@@ -226,12 +242,4 @@ public class InteractionFactory {
 		else return null;
 	}
 
-	private static Date createDate(InstanceEdit instanceEdit) {
-		try {
-			return DATE_FORMAT.parse(instanceEdit.getDateTime());
-		} catch (ParseException e) {
-			logger.warning("Date format not valid: " + instanceEdit.getDateTime());
-			return null;
-		}
-	}
 }

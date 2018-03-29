@@ -1,6 +1,7 @@
 package org.reactome.server.tools.interaction.exporter;
 
 import jdk.nashorn.internal.ir.annotations.Ignore;
+import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,9 +26,27 @@ class InteractionExporterTest {
 		return a.getContext().getStId().compareTo(b.getContext().getStId());
 	};
 
+	@Test
+	void test() {
+		System.out.println(FilenameUtils.normalize("./hello.pdf"));
+	}
 	@BeforeEach
 	void beforeEach() {
 		Assumptions.assumeTrue(hasConnection());
+	}
+
+	@Test
+	void testPolymer() {
+		final String stId = "R-HSA-182548";
+		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
+				exporter.setObject(stId))
+				.peek(System.out::println)
+				.collect(Collectors.toList());
+		final List<Interaction> expected = Arrays.asList(
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-182548"),
+						new Interactor(getById("R-HSA-173751"), 0L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-173751"), 0L, Constants.UNSPECIFIED_ROLE)));
+		assertEquals(expected, interactions);
 	}
 
 	@Test
@@ -100,29 +119,26 @@ class InteractionExporterTest {
 
 	@Test
 	void testLimit() {
-		// + Complex:R-HSA-1911487
-		// |    + Complex:R-HSA-1852570
-		// |    |    + Complex:R-HSA-157027
-		// |    |    |    - EWAS:R-HSA-157239
-		// |    |    |    - EWAS:R-HSA-1983670
-		// |    |    + CandidateSet:R-HSA-1604454
-		// |    |    |    o EWAS:R-HSA-1604437
-		// |    + DefinedSet:R-HSA-1911410
-		// |    |    o EWAS:R-HSA-264470
-		// |    |    o EWAS:R-HSA-416464
-		final List<Interaction> expected = Arrays.asList(
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"),
-						new Interactor(getById("R-HSA-1604437"), 1L, Constants.UNSPECIFIED_ROLE),
-						new Interactor(getById("R-HSA-157239"), 1L, Constants.UNSPECIFIED_ROLE)),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-1852570"),
-						new Interactor(getById("R-HSA-1604437"), 1L, Constants.UNSPECIFIED_ROLE),
-						new Interactor(getById("R-HSA-1983670"), 1L, Constants.UNSPECIFIED_ROLE)),
-				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-157027"),
-						new Interactor(getById("R-HSA-1983670"), 1L, Constants.UNSPECIFIED_ROLE),
-						new Interactor(getById("R-HSA-157239"), 1L, Constants.UNSPECIFIED_ROLE))
-		);
+		// + Polymer:R-HSA-2564685
+		//|    - Complex:R-HSA-2468137
+		//|    |    + DefinedSet:R-HSA-2468257
+		//|    |    |    o EWAS:R-HSA-2468208
+		//|    |    |    o EWAS:R-HSA-2468209
+		//|    |    |    o EWAS:R-HSA-2468212
+		//|    |    |    o ...
+		//|    |    + DefinedSet:R-HSA-2468319
+		//|    |    |    o EWAS:R-HSA-2468299
+		//|    |    |    o EWAS:R-HSA-2468300
+		//|    |    |    o EWAS:R-HSA-2468301
+		//|    |    |    o ...
+		//|    |    + DefinedSet:R-HSA-2468333
+		//|    |    |    o EWAS:R-HSA-2468304
+		//|    |    |    o EWAS:R-HSA-2468306
+		//|    |    |    o EWAS:R-HSA-2468309
+		//|    |    |    o ...
+		final List<Interaction> expected = Collections.emptyList();
 		final List<Interaction> interactions = InteractionExporter.stream(interactionExporter ->
-				interactionExporter.setObject("R-HSA-1911487")
+				interactionExporter.setObject("R-HSA-2564685")
 						.setMaxUnitSize(3)
 						.setSpecies(HOMO_SAPIENS))
 				.collect(Collectors.toList());

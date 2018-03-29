@@ -9,9 +9,9 @@ import java.util.*;
 
 class InteractionCollector {
 
-	private IncludeSimpleEntity includeSimpleEntity;
-	private int maxUnitSize;
-	private Collection<Interaction> interactions;
+	private final IncludeSimpleEntity includeSimpleEntity;
+	private final int maxUnitSize;
+	private final Collection<Interaction> interactions = new LinkedHashSet<>();
 
 	InteractionCollector(IncludeSimpleEntity includeSimpleEntity, int maxUnitSize) {
 		this.includeSimpleEntity = includeSimpleEntity;
@@ -19,7 +19,7 @@ class InteractionCollector {
 	}
 
 	Collection<Interaction> explore(DatabaseObject object) {
-		interactions = new LinkedHashSet<>();
+		interactions.clear();
 		if (object instanceof Polymer)
 			explorePolymer((Polymer) object);
 		else if (object instanceof Complex)
@@ -30,21 +30,26 @@ class InteractionCollector {
 	}
 
 	private void explorePolymer(Polymer polymer) {
-		if (polymer.getRepeatedUnit() != null)
-			for (PhysicalEntity entity : polymer.getRepeatedUnit())
-				addInteraction(polymer, InteractionType.PHYSICAL, entity, 0, entity, 0);
+		final Unit unit = new Unit(polymer, includeSimpleEntity);
+		if (unit.getChildren().isEmpty() || unit.getChildren().size() > maxUnitSize)
+			return;
+		unit.getChildren().forEach((entity, stoichiometry) ->
+				addInteraction(polymer, InteractionType.PHYSICAL, entity, 0, entity, 0));
 	}
 
 	private void exploreComplex(Complex complex) {
 		final Unit unit = new Unit(complex, includeSimpleEntity);
-		if (unit.getChildren().isEmpty()) return;
+		if (unit.getChildren().isEmpty() || unit.getChildren().size() > maxUnitSize)
+			return;
 		matrixExpansion(complex, unit);
 		olygomers(complex, unit);
 	}
 
 	private void exploreReaction(ReactionLikeEvent reaction) {
+		if (reaction instanceof BlackBoxEvent) return;
 		final Unit unit = new Unit(reaction, includeSimpleEntity);
-		if (unit.getChildren().isEmpty()) return;
+		if (unit.getChildren().isEmpty() || unit.getChildren().size() > maxUnitSize)
+			return;
 		matrixExpansion(reaction, unit);
 		olygomers(reaction, unit);
 		exploreCatalystInteractions(reaction, unit);
@@ -58,7 +63,6 @@ class InteractionCollector {
 	}
 
 	private void matrixExpansion(DatabaseObject context, Unit unit) {
-		if (unit.getUnitSize() > maxUnitSize) return;
 		final ArrayList<PhysicalEntity> components = new ArrayList<>(unit.getChildren().keySet());
 		for (int i = 0; i < components.size(); i++)
 			for (int j = i + 1; j < components.size(); j++)
@@ -118,20 +122,26 @@ class InteractionCollector {
 	private void addInteraction(DatabaseObject context, InteractionType type, PhysicalEntity a, long as, PhysicalEntity b, long bs) {
 		if (a instanceof EntitySet) {
 			final Unit unit = new Unit(a, includeSimpleEntity);
+			if (unit.getChildren().isEmpty() || unit.getChildren().size() > maxUnitSize)
+				return;
 			unit.getChildren()
 					.forEach((child, s) -> addInteraction(context, type, child, s * as, b, bs));
 		} else if (b instanceof EntitySet) {
 			final Unit unit = new Unit(b, includeSimpleEntity);
+			if (unit.getChildren().isEmpty() || unit.getChildren().size() > maxUnitSize)
+				return;
 			unit.getChildren()
 					.forEach((child, s) -> addInteraction(context, type, a, as, child, s * bs));
 		} else if (a instanceof Complex) {
 			final Unit unit = new Unit(a, includeSimpleEntity);
+			if (unit.getChildren().size() > maxUnitSize) return;
 			if (unit.getChildren().isEmpty())
 				writeInteraction(type, context, a, as, b, bs);
 			else unit.getChildren()
 					.forEach((child, s) -> addInteraction(context, type, child, s * as, b, bs));
 		} else if (b instanceof Complex) {
 			final Unit unit = new Unit(b, includeSimpleEntity);
+			if (unit.getChildren().size() > maxUnitSize) return;
 			if (unit.getChildren().isEmpty())
 				writeInteraction(type, context, a, as, b, bs);
 			else unit.getChildren()

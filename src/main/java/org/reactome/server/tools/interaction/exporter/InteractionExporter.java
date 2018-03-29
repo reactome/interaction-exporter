@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-public class InteractionExporter {
+class InteractionExporter {
 
 	private static final DatabaseObjectService OBJECT_SERVICE = ReactomeGraphCore.getService(DatabaseObjectService.class);
 	private static final SchemaService SCHEMA_SERVICE = ReactomeGraphCore.getService(SchemaService.class);
@@ -22,40 +22,40 @@ public class InteractionExporter {
 	private String species = "Homo sapiens";
 	private IncludeSimpleEntity includeSimpleEntity = IncludeSimpleEntity.NON_TRIVIAL;
 	private String stId;
-	private int maxUnitSize = Integer.MAX_VALUE;
+	private int maxUnitSize = 4;
 	private boolean verbose;
 	private InteractionCollector collector;
 
 	private InteractionExporter() {
 	}
 
-	public static Stream<Interaction> stream(Consumer<InteractionExporter> consumer) {
+	static Stream<Interaction> stream(Consumer<InteractionExporter> consumer) {
 		final InteractionExporter exporter = new InteractionExporter();
 		consumer.accept(exporter);
 		return exporter.stream();
 	}
 
-	public InteractionExporter setSpecies(String species) {
+	InteractionExporter setSpecies(String species) {
 		this.species = species;
 		return this;
 	}
 
-	public InteractionExporter setIncludeSimpleEntity(IncludeSimpleEntity includeSimpleEntity) {
+	InteractionExporter setIncludeSimpleEntity(IncludeSimpleEntity includeSimpleEntity) {
 		this.includeSimpleEntity = includeSimpleEntity;
 		return this;
 	}
 
-	public InteractionExporter setObject(String stId) {
+	InteractionExporter setObject(String stId) {
 		this.stId = stId;
 		return this;
 	}
 
-	public InteractionExporter setMaxUnitSize(int maxUnitSize) {
+	InteractionExporter setMaxUnitSize(int maxUnitSize) {
 		this.maxUnitSize = maxUnitSize;
 		return this;
 	}
 
-	public InteractionExporter setVerbose(boolean verbose) {
+	InteractionExporter setVerbose(boolean verbose) {
 		this.verbose = verbose;
 		return this;
 	}
@@ -72,10 +72,14 @@ public class InteractionExporter {
 			if (verbose) {
 				final AtomicLong total = new AtomicLong();
 				final AtomicLong count = new AtomicLong();
-				final ProgressBar bar = new ProgressBar(75);
+				final ProgressBar bar = new ProgressBar();
 				return Stream.of(Polymer.class, Complex.class, ReactionLikeEvent.class)
 						.map(aClass -> SCHEMA_SERVICE.getByClass(aClass, species))
-						.peek(collection -> total.set(collection.size()))
+						.peek(collection -> {
+							total.set(collection.size());
+							bar.restart();
+							count.set(0);
+						})
 						.flatMap(Collection::stream)
 						.peek(o -> {
 							count.incrementAndGet();

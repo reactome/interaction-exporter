@@ -1,5 +1,6 @@
 package org.reactome.server.tools.interaction.exporter.util;
 
+import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Timer;
@@ -8,18 +9,13 @@ import java.util.TimerTask;
 public class ProgressBar {
 
 	private final static DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss");
-	private final TimerTask task = new TimerTask() {
-		@Override
-		public void run() {
-			printProgress();
-		}
-	};
 	private final int chunks;
 	private long start;
 	private String message;
 	private double progress;
 	private boolean started = false;
-	private Timer timer = new Timer(true);
+	private Timer timer;
+	private PrintStream printStream = System.err;
 
 	public ProgressBar() {
 		this.chunks = 50;
@@ -37,7 +33,13 @@ public class ProgressBar {
 		this.progress = progress;
 		if (!started) {
 			started = true;
-			timer.schedule(task, 250, 250);
+			timer = new Timer(true);
+			timer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					printProgress();
+				}
+			}, 250, 250);
 			start = System.nanoTime();
 		}
 	}
@@ -51,21 +53,21 @@ public class ProgressBar {
 	}
 
 	private void printProgress(double progress, String message, int completed, long elapsed) {
-		System.out.printf("\r%s %6.2f%% [", DATE_FORMAT.format(elapsed), progress * 100);
-		for (int i = 0; i < completed; i++) System.out.print("=");
+		printStream.printf("\r%s %6.2f%% [", DATE_FORMAT.format(elapsed), progress * 100);
+		for (int i = 0; i < completed; i++) printStream.print("=");
 		int remaining = chunks - completed;
 		if (remaining > 0) {
 			remaining -= 1;
-			System.out.print(">");
+			printStream.print(">");
 		}
-		for (int i = 0; i < remaining; i++) System.out.print(" ");
-		System.out.print("]");
-		if (message != null) System.out.printf(" %s", message);
-		System.out.flush();
+		for (int i = 0; i < remaining; i++) printStream.print(" ");
+		printStream.print("]");
+		if (message != null) printStream.printf(" %s", message);
+		printStream.flush();
 	}
 
-	public void flush() {
-		task.run();
-		timer.cancel();
+	public void restart() {
+		printStream.println();
+		started = false;
 	}
 }

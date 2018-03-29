@@ -22,15 +22,14 @@ public class Visualizer {
 	// trivial = (trivial)
 	private static final String FORMAT = "%s %s%s:%s%s";
 
-	static void printTree(String stId) {
+	public static void printTree(String stId) {
 		printTree(stId, System.out);
 	}
 
-	static void printTree(String stId, PrintStream printStream) {
+	public static void printTree(String stId, PrintStream printStream) {
 		final DatabaseObjectService service = ReactomeGraphCore.getService(DatabaseObjectService.class);
 		final DatabaseObject object = service.findById(stId);
 		expand(printStream, object, 1, 0, "");
-		printStream.println();
 	}
 
 	private static void expand(PrintStream printStream, DatabaseObject entity, int stoichiometry, int level, String prefix) {
