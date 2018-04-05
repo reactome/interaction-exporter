@@ -1,7 +1,7 @@
 package org.reactome.server.tools.interaction.exporter;
 
 import org.junit.jupiter.api.*;
-import org.reactome.server.tools.interaction.exporter.filter.IncludeSimpleEntity;
+import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
 import org.reactome.server.tools.interaction.exporter.util.Constants;
 
 import java.util.*;
@@ -37,7 +37,7 @@ public class InteractionExporterTest {
 		final String stId = "R-HSA-110576";
 		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
 				exporter.setSpecies(HOMO_SAPIENS)
-						.setIncludeSimpleEntity(IncludeSimpleEntity.NON_TRIVIAL)
+						.setSimpleEntityPolicy(SimpleEntityPolicy.NON_TRIVIAL)
 						.setMaxUnitSize(4)
 						.setObject(stId))
 				.collect(Collectors.toList());

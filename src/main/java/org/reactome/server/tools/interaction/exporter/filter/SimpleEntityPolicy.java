@@ -5,7 +5,7 @@ import org.reactome.server.graph.domain.model.SimpleEntity;
 
 import java.util.function.Predicate;
 
-public enum IncludeSimpleEntity {
+public enum SimpleEntityPolicy {
 
 	ALL(entity -> true),
 	NONE(entity -> !(entity instanceof SimpleEntity)),
@@ -17,7 +17,7 @@ public enum IncludeSimpleEntity {
 	});
 	private final Predicate<PhysicalEntity> filter;
 
-	IncludeSimpleEntity(Predicate<PhysicalEntity> filter) {
+	SimpleEntityPolicy(Predicate<PhysicalEntity> filter) {
 		this.filter = filter;
 	}
 

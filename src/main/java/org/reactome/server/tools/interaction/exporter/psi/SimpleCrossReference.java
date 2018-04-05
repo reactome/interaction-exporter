@@ -40,7 +40,7 @@ public class SimpleCrossReference implements psidev.psi.mi.tab.model.CrossRefere
 		this.text = text;
 	}
 
-	SimpleCrossReference(String database, String identifier) {
+	public SimpleCrossReference(String database, String identifier) {
 		setDatabase(database);
 		this.identifier = identifier;
 	}

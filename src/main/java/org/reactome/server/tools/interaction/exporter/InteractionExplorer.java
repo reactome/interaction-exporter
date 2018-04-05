@@ -1,7 +1,7 @@
 package org.reactome.server.tools.interaction.exporter;
 
 import org.reactome.server.graph.domain.model.*;
-import org.reactome.server.tools.interaction.exporter.filter.IncludeSimpleEntity;
+import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
 import org.reactome.server.tools.interaction.exporter.util.Constants;
 import psidev.psi.mi.tab.model.CrossReference;
 
@@ -12,7 +12,7 @@ import java.util.*;
  */
 class InteractionExplorer {
 
-	private final IncludeSimpleEntity includeSimpleEntity;
+	private final SimpleEntityPolicy simpleEntityPolicy;
 	private final int maxUnitSize;
 	/**
 	 * Make sure only one interaction is exporter between two elements. This set
@@ -25,8 +25,8 @@ class InteractionExplorer {
 	 * Configures a collector with a specific behaviour. The collector can be
 	 * reused.
 	 */
-	InteractionExplorer(IncludeSimpleEntity includeSimpleEntity, int maxUnitSize) {
-		this.includeSimpleEntity = includeSimpleEntity;
+	InteractionExplorer(SimpleEntityPolicy simpleEntityPolicy, int maxUnitSize) {
+		this.simpleEntityPolicy = simpleEntityPolicy;
 		this.maxUnitSize = maxUnitSize;
 	}
 
@@ -49,7 +49,7 @@ class InteractionExplorer {
 	}
 
 	private void explorePolymer(Polymer polymer) {
-		final Unit unit = new Unit(polymer, includeSimpleEntity);
+		final Unit unit = new Unit(polymer, simpleEntityPolicy);
 		if (unit.getChildren().isEmpty() || unit.getChildren().size() > maxUnitSize)
 			return;
 		unit.getChildren().forEach((entity, stoichiometry) ->
@@ -57,7 +57,7 @@ class InteractionExplorer {
 	}
 
 	private void exploreComplex(Complex complex) {
-		final Unit unit = new Unit(complex, includeSimpleEntity);
+		final Unit unit = new Unit(complex, simpleEntityPolicy);
 		if (unit.getChildren().isEmpty() || unit.getChildren().size() > maxUnitSize)
 			return;
 		matrixExpansion(complex, unit);
@@ -66,7 +66,7 @@ class InteractionExplorer {
 
 	private void exploreReaction(ReactionLikeEvent reaction) {
 		if (reaction instanceof BlackBoxEvent) return;
-		final Unit unit = new Unit(reaction, includeSimpleEntity);
+		final Unit unit = new Unit(reaction, simpleEntityPolicy);
 		if (unit.getChildren().isEmpty() || unit.getChildren().size() > maxUnitSize)
 			return;
 		matrixExpansion(reaction, unit);
@@ -145,24 +145,24 @@ class InteractionExplorer {
 
 	private void addInteraction(DatabaseObject context, InteractionType type, PhysicalEntity a, long as, PhysicalEntity b, long bs) {
 		if (a instanceof EntitySet) {
-			final Unit unit = new Unit(a, includeSimpleEntity);
+			final Unit unit = new Unit(a, simpleEntityPolicy);
 			if (unit.getChildren().isEmpty() || unit.getChildren().size() > maxUnitSize)
 				return;
 			unit.getChildren()
 					.forEach((child, s) -> addInteraction(context, type, child, s * as, b, bs));
 		} else if (b instanceof EntitySet) {
-			final Unit unit = new Unit(b, includeSimpleEntity);
+			final Unit unit = new Unit(b, simpleEntityPolicy);
 			if (unit.getChildren().isEmpty() || unit.getChildren().size() > maxUnitSize)
 				return;
 			unit.getChildren()
 					.forEach((child, s) -> addInteraction(context, type, a, as, child, s * bs));
 		} else if (a instanceof Complex) {
-			final Unit unit = new Unit(a, includeSimpleEntity);
+			final Unit unit = new Unit(a, simpleEntityPolicy);
 			if (unit.getChildren().size() > maxUnitSize) return;
 			unit.getChildren()
 					.forEach((child, s) -> addInteraction(context, type, child, s * as, b, bs));
 		} else if (b instanceof Complex) {
-			final Unit unit = new Unit(b, includeSimpleEntity);
+			final Unit unit = new Unit(b, simpleEntityPolicy);
 			if (unit.getChildren().size() > maxUnitSize) return;
 			unit.getChildren()
 					.forEach((child, s) -> addInteraction(context, type, a, as, child, s * bs));

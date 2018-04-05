@@ -2,7 +2,7 @@ package org.reactome.server.tools.interaction.exporter;
 
 import org.apache.commons.cli.*;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
-import org.reactome.server.tools.interaction.exporter.filter.IncludeSimpleEntity;
+import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
 import org.reactome.server.tools.interaction.exporter.util.GraphCoreConfig;
 import org.reactome.server.tools.interaction.exporter.util.Visualizer;
 import org.reactome.server.tools.interaction.exporter.writer.InteractionWriter;
@@ -47,16 +47,16 @@ public class Main {
 			}
 			final OutputStream os = output == null ? System.out : new FileOutputStream(output);
 
-			final IncludeSimpleEntity includeSimpleEntity;
+			final SimpleEntityPolicy simpleEntityPolicy;
 			switch (include.toLowerCase()) {
 				case "all":
-					includeSimpleEntity = IncludeSimpleEntity.ALL;
+					simpleEntityPolicy = SimpleEntityPolicy.ALL;
 					break;
 				case "none":
-					includeSimpleEntity = IncludeSimpleEntity.NONE;
+					simpleEntityPolicy = SimpleEntityPolicy.NONE;
 					break;
 				default:
-					includeSimpleEntity = IncludeSimpleEntity.NON_TRIVIAL;
+					simpleEntityPolicy = SimpleEntityPolicy.NON_TRIVIAL;
 			}
 
 			final String f;
@@ -78,7 +78,7 @@ public class Main {
 			System.err.println("species     = " + Arrays.toString(species));
 			System.err.println("objects     = " + (objects == null ? "all" : Arrays.toString(objects)));
 			System.err.println("format      = " + f);
-			System.err.println("include     = " + includeSimpleEntity);
+			System.err.println("include     = " + simpleEntityPolicy);
 			System.err.println("output      = " + (output == null ? "stdout" : output));
 			System.err.println("database    = " + String.format("%s:%d(%s,***)%n", host, port.intValue(), user));
 
@@ -93,7 +93,7 @@ public class Main {
 					System.err.println(specie);
 					InteractionExporter.stream(exporter -> exporter
 							.setSpecies(specie)
-							.setIncludeSimpleEntity(includeSimpleEntity)
+							.setSimpleEntityPolicy(simpleEntityPolicy)
 							.setMaxUnitSize(maxUnitSize.intValue())
 							.setVerbose(verbose))
 							.forEach(writer::write);
@@ -101,7 +101,7 @@ public class Main {
 			} else {
 				for (String object : objects) {
 					InteractionExporter.stream(exporter -> exporter
-							.setIncludeSimpleEntity(includeSimpleEntity)
+							.setSimpleEntityPolicy(simpleEntityPolicy)
 							.setMaxUnitSize(maxUnitSize.intValue())
 							.setVerbose(verbose)
 							.setObject(object))

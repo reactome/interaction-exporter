@@ -4,7 +4,7 @@ import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.service.SchemaService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
-import org.reactome.server.tools.interaction.exporter.filter.IncludeSimpleEntity;
+import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
 import org.reactome.server.tools.interaction.exporter.util.ProgressBar;
 
 import java.util.Collection;
@@ -20,7 +20,7 @@ public class InteractionExporter {
 	private static final SchemaService SCHEMA_SERVICE = ReactomeGraphCore.getService(SchemaService.class);
 
 	private String species = "Homo sapiens";
-	private IncludeSimpleEntity includeSimpleEntity = IncludeSimpleEntity.NON_TRIVIAL;
+	private SimpleEntityPolicy simpleEntityPolicy = SimpleEntityPolicy.NON_TRIVIAL;
 	private String stId;
 	private int maxUnitSize = 4;
 	private boolean verbose;
@@ -40,8 +40,8 @@ public class InteractionExporter {
 		return this;
 	}
 
-	public InteractionExporter setIncludeSimpleEntity(IncludeSimpleEntity includeSimpleEntity) {
-		this.includeSimpleEntity = includeSimpleEntity;
+	public InteractionExporter setSimpleEntityPolicy(SimpleEntityPolicy simpleEntityPolicy) {
+		this.simpleEntityPolicy = simpleEntityPolicy;
 		return this;
 	}
 
@@ -61,7 +61,7 @@ public class InteractionExporter {
 	}
 
 	private Stream<Interaction> stream() {
-		collector = new InteractionExplorer(includeSimpleEntity, maxUnitSize);
+		collector = new InteractionExplorer(simpleEntityPolicy, maxUnitSize);
 		if (stId != null) {
 			final DatabaseObject object = OBJECT_SERVICE.findById(stId);
 			final Collection<DatabaseObject> subContexts = collectContexts(object);

@@ -1,7 +1,7 @@
 package org.reactome.server.tools.interaction.exporter;
 
 import org.reactome.server.graph.domain.model.*;
-import org.reactome.server.tools.interaction.exporter.filter.IncludeSimpleEntity;
+import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -14,9 +14,9 @@ class Unit {
 
 	private final Map<PhysicalEntity, Long> children;
 
-	Unit(DatabaseObject object, IncludeSimpleEntity includeSimpleEntity) {
+	Unit(DatabaseObject object, SimpleEntityPolicy simpleEntityPolicy) {
 		children = children(object).stream()
-				.filter(includeSimpleEntity.getFilter())
+				.filter(simpleEntityPolicy.getFilter())
 				.collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
 	}
 
