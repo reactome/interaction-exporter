@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-class InteractionExporter {
+public class InteractionExporter {
 
 	private static final DatabaseObjectService OBJECT_SERVICE = ReactomeGraphCore.getService(DatabaseObjectService.class);
 	private static final SchemaService SCHEMA_SERVICE = ReactomeGraphCore.getService(SchemaService.class);
@@ -24,44 +24,44 @@ class InteractionExporter {
 	private String stId;
 	private int maxUnitSize = 4;
 	private boolean verbose;
-	private InteractionCollector collector;
+	private InteractionExplorer collector;
 
 	private InteractionExporter() {
 	}
 
-	static Stream<Interaction> stream(Consumer<InteractionExporter> consumer) {
+	public static Stream<Interaction> stream(Consumer<InteractionExporter> consumer) {
 		final InteractionExporter exporter = new InteractionExporter();
 		consumer.accept(exporter);
 		return exporter.stream();
 	}
 
-	InteractionExporter setSpecies(String species) {
+	public InteractionExporter setSpecies(String species) {
 		this.species = species;
 		return this;
 	}
 
-	InteractionExporter setIncludeSimpleEntity(IncludeSimpleEntity includeSimpleEntity) {
+	public InteractionExporter setIncludeSimpleEntity(IncludeSimpleEntity includeSimpleEntity) {
 		this.includeSimpleEntity = includeSimpleEntity;
 		return this;
 	}
 
-	InteractionExporter setObject(String stId) {
+	public InteractionExporter setObject(String stId) {
 		this.stId = stId;
 		return this;
 	}
 
-	InteractionExporter setMaxUnitSize(int maxUnitSize) {
+	public InteractionExporter setMaxUnitSize(int maxUnitSize) {
 		this.maxUnitSize = maxUnitSize;
 		return this;
 	}
 
-	InteractionExporter setVerbose(boolean verbose) {
+	public InteractionExporter setVerbose(boolean verbose) {
 		this.verbose = verbose;
 		return this;
 	}
 
 	private Stream<Interaction> stream() {
-		collector = new InteractionCollector(includeSimpleEntity, maxUnitSize);
+		collector = new InteractionExplorer(includeSimpleEntity, maxUnitSize);
 		if (stId != null) {
 			final DatabaseObject object = OBJECT_SERVICE.findById(stId);
 			final Collection<DatabaseObject> subContexts = collectContexts(object);

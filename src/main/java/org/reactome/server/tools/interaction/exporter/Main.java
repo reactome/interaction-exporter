@@ -31,13 +31,13 @@ public class Main {
 			final String user = getValue(commandLine, "user", String.class, null);
 			final String password = getValue(commandLine, "password", String.class, null);
 			final String tree = getValue(commandLine, "tree", String.class, null);
-			final Boolean verbose = commandLine.hasOption("V");
 			final Number maxUnitSize = getValue(commandLine, "m", Number.class, 4);
 			final String[] objects = getValue(commandLine, "O", String[].class, null);
 			final String[] species = getValue(commandLine, "s", String[].class, new String[]{"Homo sapiens"});
 			final String format = getValue(commandLine, "f", String.class, "PSI-MITAB");
 			final String include = getValue(commandLine, "i", String.class, "NON_TRIVIAL");
 			final File output = getValue(commandLine, "o", File.class, null);
+			final Boolean verbose = commandLine.hasOption("V") && output != null;
 
 			ReactomeGraphCore.initialise(host, port.toString(), user, password, GraphCoreConfig.class);
 
@@ -96,13 +96,7 @@ public class Main {
 							.setIncludeSimpleEntity(includeSimpleEntity)
 							.setMaxUnitSize(maxUnitSize.intValue())
 							.setVerbose(verbose))
-							.forEach(interaction -> {
-								try {
-									writer.write(interaction);
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-							});
+							.forEach(writer::write);
 				}
 			} else {
 				for (String object : objects) {
@@ -111,13 +105,7 @@ public class Main {
 							.setMaxUnitSize(maxUnitSize.intValue())
 							.setVerbose(verbose)
 							.setObject(object))
-							.forEach(interaction -> {
-								try {
-									writer.write(interaction);
-								} catch (IOException e) {
-									e.printStackTrace();
-								}
-							});
+							.forEach(writer::write);
 				}
 			}
 		} catch (ParseException | IOException e) {

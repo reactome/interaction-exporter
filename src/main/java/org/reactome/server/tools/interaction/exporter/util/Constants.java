@@ -26,5 +26,6 @@ public class Constants {
 	public static final CrossReference SMALL_MOLECULE = new SimpleCrossReference(PSI_MI, "MI:0328", "small molecule");
 	public static final CrossReference COMPLEX = new SimpleCrossReference(PSI_MI, "MI:0314", "complex");
 	public static final CrossReference BIOPOLYMER = new SimpleCrossReference(PSI_MI, "MI:0383", "biopolymer");
+	public static final CrossReference UNKNOWN_PARTICIPANT = new SimpleCrossReference(PSI_MI, "MI:0329", "unknown participant");
 	public static final Publication REACTOME_PUBLICATION = new SimplePublication(24243840, "Fabregat", 2015);
 }

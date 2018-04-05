@@ -7,19 +7,38 @@ import psidev.psi.mi.tab.model.CrossReference;
 
 import java.util.*;
 
-class InteractionCollector {
+/**
+ * Collects interaction from contexts.
+ */
+class InteractionExplorer {
 
 	private final IncludeSimpleEntity includeSimpleEntity;
 	private final int maxUnitSize;
-	private final Collection<Interaction> interactions = new LinkedHashSet<>();
+	/**
+	 * Make sure only one interaction is exporter between two elements. This set
+	 * is necessary because a physical entity can be several times in a context
+	 * in different parts of the tree.
+	 */
+	private Collection<Interaction> interactions;
 
-	InteractionCollector(IncludeSimpleEntity includeSimpleEntity, int maxUnitSize) {
+	/**
+	 * Configures a collector with a specific behaviour. The collector can be
+	 * reused.
+	 */
+	InteractionExplorer(IncludeSimpleEntity includeSimpleEntity, int maxUnitSize) {
 		this.includeSimpleEntity = includeSimpleEntity;
 		this.maxUnitSize = maxUnitSize;
 	}
 
+	/**
+	 * Collects all the interactions under this object, using the object as
+	 * context. Only those interactions where object is the context are
+	 * collected.
+	 *
+	 * @see InteractionExporter
+	 */
 	Collection<Interaction> explore(DatabaseObject object) {
-		interactions.clear();
+		interactions = new HashSet<>();
 		if (object instanceof Polymer)
 			explorePolymer((Polymer) object);
 		else if (object instanceof Complex)
@@ -55,13 +74,6 @@ class InteractionCollector {
 		exploreCatalystInteractions(reaction, unit);
 	}
 
-	private void olygomers(DatabaseObject context, Unit unit) {
-		unit.getChildren().forEach((entity, stoichiometry) -> {
-			if (stoichiometry > 1)
-				addInteraction(context, InteractionType.PHYSICAL, entity, stoichiometry, entity, 0);
-		});
-	}
-
 	private void matrixExpansion(DatabaseObject context, Unit unit) {
 		final ArrayList<PhysicalEntity> components = new ArrayList<>(unit.getChildren().keySet());
 		for (int i = 0; i < components.size(); i++)
@@ -70,6 +82,13 @@ class InteractionCollector {
 						components.get(i), unit.getChildren().get(components.get(i)),
 						components.get(j), unit.getChildren().get(components.get(j)));
 
+	}
+
+	private void olygomers(DatabaseObject context, Unit unit) {
+		unit.getChildren().forEach((entity, stoichiometry) -> {
+			if (stoichiometry > 1)
+				addInteraction(context, InteractionType.PHYSICAL, entity, stoichiometry, entity, 0);
+		});
 	}
 
 	private void exploreCatalystInteractions(ReactionLikeEvent reaction, Unit unit) {
@@ -86,11 +105,10 @@ class InteractionCollector {
 			else other.add(input);
 		});
 		/* Conditions for the input:
-		 * EWAS | Complex | SimpleEntity | Other
-		 * -----|---------|--------------|--------
-		 *   1  |    0    |     any      |  0
-		 *   0  |    1    |     any      |  0
-		 *   0  |    0    |      1       |  0
+		 * Macro | small | Other
+		 * ------|-------|--------
+		 *   1   |  any  |   0
+		 *   0   |   1   |   0
 		 */
 		final PhysicalEntity input = other.isEmpty()
 				? macro.size() == 1
@@ -135,34 +153,51 @@ class InteractionCollector {
 		} else if (a instanceof Complex) {
 			final Unit unit = new Unit(a, includeSimpleEntity);
 			if (unit.getChildren().size() > maxUnitSize) return;
-			if (unit.getChildren().isEmpty())
-				writeInteraction(type, context, a, as, b, bs);
-			else unit.getChildren()
+			unit.getChildren()
 					.forEach((child, s) -> addInteraction(context, type, child, s * as, b, bs));
 		} else if (b instanceof Complex) {
 			final Unit unit = new Unit(b, includeSimpleEntity);
 			if (unit.getChildren().size() > maxUnitSize) return;
-			if (unit.getChildren().isEmpty())
-				writeInteraction(type, context, a, as, b, bs);
-			else unit.getChildren()
+			unit.getChildren()
 					.forEach((child, s) -> addInteraction(context, type, a, as, child, s * bs));
 		} else writeInteraction(type, context, a, as, b, bs);
 	}
 
 	private void writeInteraction(InteractionType type, DatabaseObject context, PhysicalEntity A, long Ast, PhysicalEntity B, long Bst) {
-		CrossReference aRole;
-		CrossReference bRole;
-		if (type != InteractionType.PHYSICAL) {
-			aRole = Constants.ENZYME;
-			bRole = Constants.ENZYME_TARGET;
-		} else {
-			aRole = Constants.UNSPECIFIED_ROLE;
-			bRole = Constants.UNSPECIFIED_ROLE;
+		// Skip interaction of simple entities
+		if (A instanceof SimpleEntity && B instanceof SimpleEntity) return;
+		final CrossReference aRole = type == InteractionType.PHYSICAL
+				? Constants.UNSPECIFIED_ROLE : Constants.ENZYME;
+		final CrossReference bRole = type == InteractionType.PHYSICAL
+				? Constants.UNSPECIFIED_ROLE : Constants.ENZYME_TARGET;
+		collect(new Interaction(type, context, new Interactor(A, Ast, aRole), new Interactor(B, Bst, bRole)));
+	}
+
+	private void collect(Interaction interaction) {
+		// Is there a similar interaction with different stoichiometry?
+		final Interaction other = interactions.stream()
+				.filter(interaction::equalsIgnoreStoichiometry)
+				.findFirst().orElse(null);
+		if (other == null) interactions.add(interaction);
+		else {
+			interactions.remove(other);
+			interactions.add(bestStoichiometry(interaction, other));
 		}
-		if (!(A instanceof SimpleEntity && B instanceof SimpleEntity))
-			interactions.add(new Interaction(type, context,
-					new Interactor(A, Ast, aRole),
-					new Interactor(B, Bst, bRole)));
+	}
+
+	/**
+	 * Get the element with best stoichiometry. Best stoichiometry is defined as
+	 * the lowest of the sums of the two interactor's stoichiometry, i.e:
+	 *
+	 * <pre>
+	 * min(interactionA.a.stoichiometry + interactionA.b.stoichiometry,
+	 *     interactionB.a.stoichiometry + interactionB.b.stoichiometry)
+	 * </pre>.
+	 */
+	private Interaction bestStoichiometry(Interaction interactionA, Interaction interactionB) {
+		final long a = interactionA.getA().getStoichiometry() + interactionA.getB().getStoichiometry();
+		final long b = interactionB.getA().getStoichiometry() + interactionB.getB().getStoichiometry();
+		return a < b ? interactionA : interactionB;
 	}
 
 }

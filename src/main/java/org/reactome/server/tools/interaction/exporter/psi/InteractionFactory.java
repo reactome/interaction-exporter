@@ -73,7 +73,7 @@ public class InteractionFactory {
 			return Constants.BIOPOLYMER;
 		else if (entity instanceof SimpleEntity)
 			return Constants.SMALL_MOLECULE;
-		return null;
+		return Constants.UNKNOWN_PARTICIPANT;
 	}
 
 	private static Organism getOrganism(DatabaseObject entity) {
@@ -129,7 +129,6 @@ public class InteractionFactory {
 	private static List<CrossReference> getXrefs(DatabaseObject entity) {
 		// molecular function
 		// cellular components
-		//
 		final List<CrossReference> references = new LinkedList<>();
 		if (entity instanceof ReactionLikeEvent) {
 			final ReactionLikeEvent reaction = (ReactionLikeEvent) entity;

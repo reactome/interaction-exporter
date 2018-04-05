@@ -14,8 +14,18 @@ Two molecules are reported as interactors, if:
 2. they are inputs of the same reaction
 3. one of them is the catalyst of a reaction and the other one is an input of that reaction.
 
+Interactions are not oriented: if _a_ interacts with _b_, then _b_ interacts with _a_, so only one interaction is exported. However, duplicated interaction could appear as uniqueness is only warranted at the level of Reactome stable identifiers. If two Reactome objects with different stable identifiers point to the same protein, it is not considered as duplicated.
 ## Instalation
-bla bla bla
+To use Interaction exporter as a library, add it to your project using maven.
+
+```
+<dependencies>
+	<dependency>
+            <groupId>org.reactome.server.tools</groupId>
+            <artifactId>interaction-exporter</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+        </dependency>
+```
 
 ## Methods
 This is a detailed guide about how interactions are inferred in Reactome.
@@ -58,7 +68,7 @@ Context | Interactor A | Interactor B|Type
 Complex1|0 x EWAS1|2 x EWAS1|Physical
 Complex1|2 x EWAS1|SimpleEntity1|Physical
 
-Components of a complex can be other complexes. In that case, each subcomplex is divided in its components.
+Components of a complex can be other complexes. In that case, each subcomplex is expanded in its components.
 
 ```
 + Complex1
@@ -92,7 +102,7 @@ Complex1|EWAS2|SimpleEntity1|Physical
 
 [//]: # (If a complex is identified in ComplexPortal, then it is not divided into its components, as it can interact as a unit)
 
-The same interaction can happen in different contexts, when they are not subcomponents of each other.
+The same interaction can happen in different contexts when they are not subcomponents of each other.
 
 ```
 + Complex1
@@ -111,7 +121,7 @@ Complex2|EWAS2|SimpleEntity1|Physical
 
 
 ### Polymers
-One interaction is inferred from each polymer: the repeated unit with itself. The stoichiometry for both interators is 0.
+One interaction is inferred from each polymer: the repeated unit interacts with itself. The stoichiometry for both interactors is 0.
 ```
 + Polymer1
 |   - EWAS1
@@ -134,8 +144,8 @@ Of course, if the repeated unit of a polymer is a complex or an entity set, it m
 Context | Interactor A | Interactor B|Type
 ---|---|---|---
 Polymer1|0 x EWAS1|0 x EWAS1|Physical
-Complex1|0 x EWAS1|0 x SimpleEntity|Physical
-Polymer1|0 x SimpleEntity1|0 x SimpleEntity1|Physical
+Polymer1|0 x EWAS1|0 x SimpleEntity1|Physical
+Complex1|1 x EWAS1|1 x SimpleEntity1|Physical
 Polymer2|0 x EWAS2|0 x EWAS2|Physical
 Polymer2|0 x EWAS2|0 x SimpleEntity2|Physical
 
@@ -171,7 +181,7 @@ Context | Interactor A | Interactor B | Type
 --- | --- | --- | ---
 Reaction1|PhysicalEntity1|PhysicalEntity2|Chemical
 
-The molecule that acts as the catalyst is the active unit of the catalyst activity, if, and only if, one active unit is specified. If zero or more than one active units are specified, then the physical entity is used.
+The molecule that acts as the catalyst is the active unit of the catalyst activity, if, and only if, one active unit is specified. If zero or more than one active units are specified, then the physical entity is used as catalyst.
 
 The input must be formed by one relevant molecule (protein, complex, polymer) and zero or more small molecules (cofactors). If the input is a set (with or without cofactors), every member of the input is interacted with the catalyst. If the input is just one small molecule, then it is used as input.
 
@@ -182,21 +192,21 @@ BlackBoxEvents are ignored.
 ### PSI-MITAB output
 Results are exported using PSI-MITAB version 27. 
 
-column | name | multiplicity | value (db:id:text) | description
+column | name | multiplicity | value (db:id:text) | source
 --- | --- | --- | --- | ---
 1, 2 | interactor unique identifier | 1 | (ChEBI, reactome, uniprotkb):(\*) | uniprotkb for proteins, ChEBI for small molecules, reactome as default
 3, 4 | interactor alternative identifiers | 0..* | (\*):(\*) | any other identifier
 5, 6 | interactor aliases | 0..* |(reactome):(\*):(name) | entity.names if !name.contains("\n") && !name.contains(":")
 7 | interaction detection methods | 1 |(psi-mi):(MI:0364):(inferred by curator) |constant
-8 | first author | 1..* | (\*) | context.literatureReferences.author
-9 | publication identifier | 1..* | (\*) | context.literatureReferences.pubmedIdentifier
+8 | first author | 1..* | (\*) | context.literatureReferences.author, by default *Fabregat et al. (2015)*
+9 | publication identifier | 1..* | (\*) | context.literatureReferences.pubmedIdentifier. By default *pubmed:24243840*
 10, 11 | interactor taxonomy | 1..* | (taxid):(\*) |interactor.species
 12 | Interaction types | 1 |(psi-mi):(\*):(\*) | physical for complex/polymer/inputs, reaction.catalyst.activity for reactions
-13 | Source databases | 1 |(psi-mi):(MI:0467):(reactome)
+13 | Source databases | 1 |(psi-mi):(MI:0467):(reactome) | constant
 14 | Interaction identifiers | 1 | (reactome):(\*)| context.stId
 15 | Confidence score | 1 |(reactome-score):(\*) | 0.4 if context is inferred, otherwise 0.5
 16 | Complex expansion | 0..1 | (psi-mi):(MI:1061):(matrix expansion) | matrix expansion for complex/polymer/input. empty for catalyst interactions
-17, 18 | Biological roles | 1 | (psi-mi):(MI:0499,  MI:0501,  MI:0502):(enzyme,  enzyme target,  unspecified role) | if context is complex/polymer -> unspecified for complex/polymer/inputs. enzyme/enzyme target for catalyst/input pairs
+17, 18 | Biological roles | 1 | (psi-mi):(MI:0499,  MI:0501,  MI:0502):(enzyme,  enzyme target,  unspecified role) | unspecified for complex/polymer/inputs. enzyme/enzyme target for catalyst/input pairs
 19, 20 | Experimental roles | 1 |(psi-mi):(MI:0499):(unspecified role) | constant
 21, 22 | Interactors type | 0..1 | (psi-mi):(\*):(\*) | biopolymer,  complex,  desoxyribonucleic acid,  protein,  ribonucleic acid,  small molecule
 23, 24 | interactors Xref | 1..* | (go):(\*):(\*) |interactors.compartments

@@ -15,7 +15,7 @@ public class ProgressBar {
 	private double progress;
 	private boolean started = false;
 	private Timer timer;
-	private PrintStream printStream = System.err;
+	private PrintStream printStream = System.out;
 
 	public ProgressBar() {
 		this.chunks = 50;

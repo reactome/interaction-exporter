@@ -15,15 +15,15 @@ import static org.reactome.server.tools.interaction.exporter.TestUtils.getById;
 /**
  * Tests to check that proper PSI-MITAB interactions are created.
  */
-class PsiMiTabWriterTest {
+public class PsiMiTabWriterTest {
 
 	@BeforeAll
-	static void beforeAll() {
+	public static void beforeAll() {
 		ReactomeGraphCore.initialise("localhost", "7474", "neo4j", "reactome", GraphCoreConfig.class);
 	}
 
 	@Test
-	void testPhysical() {
+	public void testPhysical() {
 		final String expected = "" +
 				"uniprotkb:O60542\tuniprotkb:Q9GZZ7" +
 				"\treactome:R-HSA-434907|refseq:NP_004149.1|ENSEMBL:ENSG00000125650|entrezgene/locuslink:5623" +
@@ -60,7 +60,7 @@ class PsiMiTabWriterTest {
 	}
 
 	@Test
-	void testEnzymaticReaction() {
+	public void testEnzymaticReaction() {
 		final String expected = "" +
 				"uniprotkb:P52735" +
 				"\treactome:R-HSA-445010" +
@@ -101,7 +101,7 @@ class PsiMiTabWriterTest {
 	}
 
 	@Test
-	void testCleavageInteraction() {
+	public void testCleavageInteraction() {
 		final String expected = "" +
 				"uniprotkb:P03956" +
 				"\treactome:R-HSA-158770" +

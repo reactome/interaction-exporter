@@ -31,7 +31,7 @@ public class TestUtils {
 		}
 	}
 
-	public static void assertEquals(InputStream expected, InputStream result) {
+	static void assertEquals(InputStream expected, InputStream result) {
 		try {
 			final BufferedReader expectedReader = new BufferedReader(new InputStreamReader(expected));
 			final BufferedReader resultReader = new BufferedReader(new InputStreamReader(result));

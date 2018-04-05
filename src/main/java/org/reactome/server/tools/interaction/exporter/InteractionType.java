@@ -23,7 +23,6 @@ public class InteractionType extends SimpleCrossReference {
 		readTypes();
 		readGoTree();
 		PHYSICAL = fromPsiMi("MI:0915");
-
 	}
 
 	private final Set<String> goId = new TreeSet<>();

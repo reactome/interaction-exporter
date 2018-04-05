@@ -1,11 +1,6 @@
 package org.reactome.server.tools.interaction.exporter;
 
-import jdk.nashorn.internal.ir.annotations.Ignore;
-import org.apache.commons.io.FilenameUtils;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.reactome.server.tools.interaction.exporter.filter.IncludeSimpleEntity;
 import org.reactome.server.tools.interaction.exporter.util.Constants;
 
@@ -15,34 +10,22 @@ import java.util.stream.Collectors;
 import static org.reactome.server.tools.interaction.exporter.TestUtils.getById;
 import static org.reactome.server.tools.interaction.exporter.TestUtils.hasConnection;
 
-class InteractionExporterTest {
+public class InteractionExporterTest {
 
 	private static final String HOMO_SAPIENS = "Homo sapiens";
-	private Comparator<? super Interaction> sorter = (a, b) -> {
-		int compare = a.getA().getEntity().compareTo(b.getA().getEntity());
-		if (compare != 0) return compare;
-		compare = a.getB().getEntity().compareTo(b.getB().getEntity());
-		if (compare != 0) return compare;
-		return a.getContext().getStId().compareTo(b.getContext().getStId());
-	};
 
-	@Test
-	void test() {
-		System.out.println(FilenameUtils.normalize("./hello.pdf"));
-	}
 	@BeforeEach
-	void beforeEach() {
+	public void beforeEach() {
 		Assumptions.assumeTrue(hasConnection());
 	}
 
 	@Test
-	void testPolymer() {
+	public void testPolymer() {
 		final String stId = "R-HSA-182548";
 		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
 				exporter.setObject(stId))
-				.peek(System.out::println)
 				.collect(Collectors.toList());
-		final List<Interaction> expected = Arrays.asList(
+		final List<Interaction> expected = Collections.singletonList(
 				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-182548"),
 						new Interactor(getById("R-HSA-173751"), 0L, Constants.UNSPECIFIED_ROLE),
 						new Interactor(getById("R-HSA-173751"), 0L, Constants.UNSPECIFIED_ROLE)));
@@ -50,7 +33,7 @@ class InteractionExporterTest {
 	}
 
 	@Test
-	void testOlygomer() {
+	public void testOlygomer() {
 		final String stId = "R-HSA-110576";
 		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
 				exporter.setSpecies(HOMO_SAPIENS)
@@ -58,7 +41,7 @@ class InteractionExporterTest {
 						.setMaxUnitSize(4)
 						.setObject(stId))
 				.collect(Collectors.toList());
-		final List<Interaction> expected = Arrays.asList(
+		final List<Interaction> expected = Collections.singletonList(
 				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-110576"),
 						new Interactor(getById("R-HSA-60024"), 6L, Constants.UNSPECIFIED_ROLE),
 						new Interactor(getById("R-HSA-60024"), 0L, Constants.UNSPECIFIED_ROLE))
@@ -67,7 +50,7 @@ class InteractionExporterTest {
 	}
 
 	@Test
-	void testComplexWithSet() {
+	public void testComplexWithSet() {
 		/*
 		+ Complex:R-HSA-1911487
 		|    + Complex:R-HSA-1852570
@@ -118,24 +101,24 @@ class InteractionExporterTest {
 	}
 
 	@Test
-	void testLimit() {
+	public void testLimit() {
 		// + Polymer:R-HSA-2564685
-		//|    - Complex:R-HSA-2468137
-		//|    |    + DefinedSet:R-HSA-2468257
-		//|    |    |    o EWAS:R-HSA-2468208
-		//|    |    |    o EWAS:R-HSA-2468209
-		//|    |    |    o EWAS:R-HSA-2468212
-		//|    |    |    o ...
-		//|    |    + DefinedSet:R-HSA-2468319
-		//|    |    |    o EWAS:R-HSA-2468299
-		//|    |    |    o EWAS:R-HSA-2468300
-		//|    |    |    o EWAS:R-HSA-2468301
-		//|    |    |    o ...
-		//|    |    + DefinedSet:R-HSA-2468333
-		//|    |    |    o EWAS:R-HSA-2468304
-		//|    |    |    o EWAS:R-HSA-2468306
-		//|    |    |    o EWAS:R-HSA-2468309
-		//|    |    |    o ...
+		// |    - Complex:R-HSA-2468137
+		// |    |    + DefinedSet:R-HSA-2468257
+		// |    |    |    o EWAS:R-HSA-2468208
+		// |    |    |    o EWAS:R-HSA-2468209
+		// |    |    |    o EWAS:R-HSA-2468212
+		// |    |    |    o ...
+		// |    |    + DefinedSet:R-HSA-2468319
+		// |    |    |    o EWAS:R-HSA-2468299
+		// |    |    |    o EWAS:R-HSA-2468300
+		// |    |    |    o EWAS:R-HSA-2468301
+		// |    |    |    o ...
+		// |    |    + DefinedSet:R-HSA-2468333
+		// |    |    |    o EWAS:R-HSA-2468304
+		// |    |    |    o EWAS:R-HSA-2468306
+		// |    |    |    o EWAS:R-HSA-2468309
+		// |    |    |    o ...
 		final List<Interaction> expected = Collections.emptyList();
 		final List<Interaction> interactions = InteractionExporter.stream(interactionExporter ->
 				interactionExporter.setObject("R-HSA-2564685")
@@ -146,7 +129,7 @@ class InteractionExporterTest {
 	}
 
 	@Test
-	void testSet() {
+	public void testSet() {
 		// + CandidateSet:R-HSA-5357900
 		// |    o EWAS:R-HSA-50845
 		// |    o EWAS:R-HSA-50847
@@ -158,7 +141,7 @@ class InteractionExporterTest {
 	}
 
 	@Test
-	void testReactionInputs() {
+	public void testReactionInputs() {
 		// + Reaction:R-HSA-5210918(1)
 		// |    i Complex:R-BAN-5205716(1)
 		// |    |    - SimpleEntity:R-ALL-74112(2)
@@ -181,7 +164,7 @@ class InteractionExporterTest {
 		assertEquals(expected, interactions);
 	}
 
-	@Ignore
+	@Disabled
 	void testReactionSameCatalystAndInput() {
 		// TODO: In this reaction the catalyst and the input is the same
 		// + Reaction:R-HSA-1222723(1)
@@ -216,7 +199,7 @@ class InteractionExporterTest {
 	}
 
 	@Test
-	void testReactionCatalyst() {
+	public void testReactionCatalyst() {
 		// + Reaction:R-HSA-5213466
 		// |    a EWAS:R-HSA-168651
 		// |    a EWAS:R-HSA-450328
@@ -253,12 +236,68 @@ class InteractionExporterTest {
 		assertEquals(expected, interactions);
 	}
 
+	@Test
+	public void testDuplicates() {
+		// + Polymer:R-HSA-391092
+		// |    - Complex:R-HSA-391091
+		// |    |    + 3 x DefinedSet:R-HSA-391094
+		// |    |    |    o EWAS:R-HSA-391093
+		// |    |    |    o EWAS:R-HSA-391095
+		// This is a polymer made out of trimers, trimers are combinations of two elements
+		final List<Interaction> expected = Arrays.asList(
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-391092"),
+						new Interactor(getById("R-HSA-391093"), 0L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-391093"), 0L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-391092"),
+						new Interactor(getById("R-HSA-391095"), 0L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-391095"), 0L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-391092"),
+						new Interactor(getById("R-HSA-391093"), 0L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-391095"), 0L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-391091"),
+						new Interactor(getById("R-HSA-391093"), 3L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-391093"), 0L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-391091"),
+						new Interactor(getById("R-HSA-391095"), 3L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-391095"), 0L, Constants.UNSPECIFIED_ROLE)),
+				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-391091"),
+						new Interactor(getById("R-HSA-391093"), 3L, Constants.UNSPECIFIED_ROLE),
+						new Interactor(getById("R-HSA-391095"), 0L, Constants.UNSPECIFIED_ROLE))
+//				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-391091"),
+//						new Interactor(getById("R-HSA-391095"), 3L, Constants.UNSPECIFIED_ROLE),
+//						new Interactor(getById("R-HSA-391093"), 0L, Constants.UNSPECIFIED_ROLE))
+		);
+		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
+				exporter.setObject("R-HSA-391092")).collect(Collectors.toList());
+		assertEquals(expected, interactions);
+	}
+
+	@Test
+	public void testEquals() {
+		final Interactor a = new Interactor(getById("R-HSA-2089965"), 0L, Constants.UNSPECIFIED_ROLE);
+		final Interactor b = new Interactor(getById("R-HSA-2089965"), 0L, Constants.UNSPECIFIED_ROLE);
+		Assertions.assertEquals(a, b);
+		final Interactor c = new Interactor(getById("R-HSA-2089966"), 0L, Constants.UNSPECIFIED_ROLE);
+		final Interaction interaction1 = new Interaction(InteractionType.PHYSICAL, getById("R-HSA-2428940"), a, c);
+		final Interaction interaction2 = new Interaction(InteractionType.PHYSICAL, getById("R-HSA-2428940"), c, a);
+		Assertions.assertEquals(interaction1, interaction2);
+	}
+
+	@Test
+	public void testHash() {
+		final Interactor a = new Interactor(getById("R-HSA-2089965"), 0L, Constants.UNSPECIFIED_ROLE);
+		final Interactor b = new Interactor(getById("R-HSA-2089965"), 0L, Constants.UNSPECIFIED_ROLE);
+		Assertions.assertEquals(a.hashCode(), b.hashCode());
+		final Interactor c = new Interactor(getById("R-HSA-2089966"), 0L, Constants.UNSPECIFIED_ROLE);
+		final Interaction interaction1 = new Interaction(InteractionType.PHYSICAL, getById("R-HSA-2428940"), a, c);
+		final Interaction interaction2 = new Interaction(InteractionType.PHYSICAL, getById("R-HSA-2428940"), c, a);
+		Assertions.assertEquals(interaction1.hashCode(), interaction2.hashCode());
+	}
+
 	private void assertEquals(List<Interaction> expected, List<Interaction> interactions) {
-		Set<Interaction> a = new TreeSet<>(sorter);
-		a.addAll(expected);
+		Set<Interaction> a = new HashSet<>(expected);
 		a.removeAll(interactions);
-		Set<Interaction> b = new TreeSet<>(sorter);
-		b.addAll(interactions);
+		Set<Interaction> b = new HashSet<>(interactions);
 		b.removeAll(expected);
 		if (!a.isEmpty() || !b.isEmpty()) {
 			String message = "Result does not match expected\n";
@@ -267,6 +306,17 @@ class InteractionExporterTest {
 			if (!b.isEmpty())
 				message += "These interactions are not expected\n" + b.stream().map(String::valueOf).collect(Collectors.joining("\n")) + "\n";
 			Assertions.fail(message);
+		}
+		if (expected.size() != interactions.size()) {
+			final Set<Interaction> uniques = new TreeSet<>();
+			final Set<Interaction> duplicates =
+					interactions.stream()
+							.filter(interaction -> !uniques.add(interaction))
+							.collect(Collectors.toSet());
+			if (!duplicates.isEmpty()) {
+				final String message = "These interactions are duplicated\n" + duplicates.stream().map(String::valueOf).collect(Collectors.joining("\n")) + "\n";
+				Assertions.fail(message);
+			}
 		}
 	}
 }

@@ -2,6 +2,7 @@ package org.reactome.server.tools.interaction.exporter.psi;
 
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
 
 public class SimpleCrossReference implements psidev.psi.mi.tab.model.CrossReference {
@@ -87,4 +88,10 @@ public class SimpleCrossReference implements psidev.psi.mi.tab.model.CrossRefere
 	public String toString() {
 		return String.join(":", database, identifier, text);
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(database, identifier, text);
+	}
+
 }

@@ -26,7 +26,10 @@ public class Tab27Writer implements InteractionWriter {
 	@Override
 	public void write(Interaction interaction) {
 		final BinaryInteraction psiInteraction = InteractionFactory.toBinaryInteraction(interaction);
-		writer.println(MitabWriterUtils.buildLine(psiInteraction, PsimiTabVersion.v2_7));
+		// Line is trimmed because a hard \n is inserted in buildLine
+		final String trimmed = MitabWriterUtils.buildLine(psiInteraction, PsimiTabVersion.v2_7).trim();
+		// The system will decide which lineSeparator to use
+		writer.println(trimmed);
 	}
 
 
