@@ -1,7 +1,7 @@
 package org.reactome.server.tools.interaction.exporter;
 
 import org.junit.jupiter.api.Assumptions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.reactome.server.tools.interaction.exporter.writer.TsvWriter;
 
@@ -14,8 +14,8 @@ import static org.reactome.server.tools.interaction.exporter.TestUtils.hasConnec
 
 public class TsvExporterTest {
 
-	@BeforeAll
-	public static void beforeAll() {
+	@BeforeEach
+	public void beforeEach() {
 		Assumptions.assumeTrue(hasConnection());
 	}
 

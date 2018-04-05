@@ -129,6 +129,12 @@ class InteractionExplorer {
 		final PhysicalEntity catalyst = catalystActivity.getActiveUnit() != null && catalystActivity.getActiveUnit().size() == 1
 				? catalystActivity.getActiveUnit().iterator().next()
 				: catalystActivity.getPhysicalEntity();
+
+		// Usually, input and catalyst are the same molecule.
+		// In this case, interactions are not exported.
+		if (catalystActivity.getPhysicalEntity().equals(input) || catalyst.equals(input))
+			return;
+
 		final InteractionType type = resolveType(catalystActivity);
 		addInteraction(reaction, type, catalyst, 1, input, unit.getChildren().get(input));
 	}
