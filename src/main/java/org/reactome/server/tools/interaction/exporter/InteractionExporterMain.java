@@ -96,7 +96,7 @@ public class InteractionExporterMain {
 		return species.stream()
 				.map(Species::getDisplayName)
 				.peek(s -> {
-					if (verbose) System.out.printf("%n%s", s);
+					if (verbose) System.out.printf("%n%s%n", s);
 				})
 				.flatMap(specie -> InteractionExporter.stream(exporter -> exporter
 						.setSpecies(specie)
