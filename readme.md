@@ -23,7 +23,7 @@ git clone https://github.com/reactome/interaction-exporter.git
 ```
 Use maven to create the executable
 ```
-mvn package -f pom.xml
+mvn clean package -f pom.xml
 ```
 A target/interaction-exporter-with-dependencies.jar will be created.
 ## Usage
