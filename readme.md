@@ -53,7 +53,7 @@ output prefix | -o, -\-output | Prefix of the output files
 verbose | -v, -\-verbose | Requests verbose output
 
 #### Note
-The "output prefix" is used to concatenate with two extensions: ".psi-mitab.txt" and ".tab-delimited.txt". Therefore, when the output parameter is
+The "output prefix" is used to concatenate the provided filename with two extensions: ".psi-mitab.txt" and ".tab-delimited.txt". Therefore, when the output parameter is
 ```
 -o path/to/folder/filename
 ```
