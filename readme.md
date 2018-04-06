@@ -15,109 +15,43 @@ Two molecules are reported as interactors, if:
 3. one of them is the catalyst of a reaction and the other one is an input of that reaction.
 
 Interactions are not oriented: if _a_ interacts with _b_, then _b_ interacts with _a_, so only one interaction is exported. However, duplicated interaction can appear since uniqueness is only warranted at the level of Reactome stable identifiers. If two Reactome objects with different stable identifiers point to the same protein, it is not considered as duplicated.
-## Instalation
-To use Interaction exporter as a library, add it to your project using maven.
 
+## Installation
+Download the source code
 ```
-<dependencies>
-	<dependency>
-		<groupId>org.reactome.server.tools</groupId>
-		<artifactId>interaction-exporter</artifactId>
-		<version>1.0.0-SNAPSHOT</version>
-	</dependency>
-	<!-- More dependencies -->
-</dependencies>
+git clone https://github.com/reactome/interaction-exporter.git
 ```
-
+Use maven to create the executable
+```
+mvn package -f pom.xml
+```
+A target/interaction-exporter-with-dependencies.jar will be created.
 ## Usage
-As any project using graph core, you must initialise the Graph Core to connect to the reactome graph database:
 ```
-ReactomeGraphCore.initialise(host, port, user, password, GraphCoreConfig.class);
-```
-*GraphCoreConfig* should extend Neo4jConfig (see https://github.com/reactome/graph-core)
-```java
-
-/**
- * Config the neo4j graph data base.
- *
- * @author Chuan-Deng dengchuanbio@gmail.com
- */
-@org.springframework.context.annotation.Configuration
-@ComponentScan(basePackages = {"org.reactome.server.graph"})
-@EnableTransactionManagement
-@EnableNeo4jRepositories(basePackages = {"org.reactome.server.graph.repository"})
-@EnableSpringConfigured
-public class GraphCoreConfig extends Neo4jConfig {
-	private SessionFactory sessionFactory;
-	private Logger logger = LoggerFactory.getLogger(GraphCoreConfig.class);
-
-	@Bean
-	public Configuration getConfiguration() {
-		Configuration config = new Configuration();
-		config.driverConfiguration()
-//                .setDriverClassName(System.getProperty("neo4j.driver")) // <neo4j.driver>org.neo4j.ogm.drivers.http.driver.HttpDriver</neo4j.driver>
-				.setDriverClassName("org.neo4j.ogm.drivers.http.driver.HttpDriver")
-				.setURI("http://".concat(System.getProperty("neo4j.host")).concat(":").concat(System.getProperty("neo4j.port")))
-				.setCredentials(System.getProperty("neo4j.user"), System.getProperty("neo4j.password"));
-		return config;
-	}
-
-	@Override
-	@Bean
-	public SessionFactory getSessionFactory() {
-		if (sessionFactory == null) {
-			logger.info("Creating a Neo4j SessionFactory");
-			sessionFactory = new SessionFactory(getConfiguration(), "org.reactome.server.graph.domain");
-		}
-		return sessionFactory;
-	}
-}
-```
-
-To create a list of interactions in a certain object:
-```
-List<Interaction> interactions = InteractionExporter.stream(exporter -> exporter.setObject("R-HSA-182548"))
-		.collect(Collectors.toList());
-```
-The *stream* method gives you an instance of InteractorExporter that you can configure. As a result, you get a stream of Interactions.
-
-Example of exploring all Homo sapiens interactions:
-```
-List<Interaction> interactions = InteractionExporter.stream(exporter -> exporter.setSpecies("Homo sapiens"))
-		.collect(Collectors.toList());
-```
-As objects in reactome contain an arbitrary number of components, and to avoid a large amount of interactions, there is a limit in the size of the objects that you can configure.
-```
-List<Interaction> interactions = InteractionExporter.stream(exporter -> exporter
-			.setSpecies("Homo sapiens")
-			.setMaxUnitSize(10))
-		.collect(Collectors.toList());
-```
-In the same line of avoiding many interactions, those interactions where at least one of the participants is a small molecule can be discarded:
-```
-List<Interaction> interactions = InteractionExporter.stream(exporter -> exporter
-			.setSpecies("Homo sapiens")
-			.setMaxUnitSize(10)
-			.setSimpleEntityPolicy(SimpleEntityPolicy.NONE))
-		.collect(Collectors.toList());
-```
-Usually, interactions are exported to a file. We support two types of files: PSI-MITAB (v2.7) and TSV. Use the InteractionWriter subclasses to export.
+java -jar interaction-exporter-wit-dependencies.jar [--help] 
+	(-h|--host) <host> (-b|--port) <port> (-u|--user) <user> (-p|--password) <password>
+	(-o|--output) <output>
+	[(-m|--maxUnitSize) <maxUnitSize>] 
+	[(-s|--species) <species>] [(-O|--object) <object>]
+	[(-t|--simpleEntitiesPolicy)  <simpleEntitiesPolicy>]
+	[(-v|--verbose)[:<verbose>]]
 
 ```
-OutputStream os = new FileOutputStream("Homo.sapiens.tab27");
-InteractionWriter writer = new Tab27Writer(os);
-InteractionExporter.stream(exporter -> exporter
-		.setMaxUnitSize(8)
-		.setSimpleEntityPolicy(SimpleEntityPolicy.NON_TRIVIAL)
-		.setSpecies("Homo sapiens"))
-		.forEach(writer::write);
-```
+### Parameters
+name|flag|description
+---|---|---
+help | -\-help | prints the help
+host | -h, -\-host | The neo4j host (default: localhost)
+port | -b, -\-port | The neo4j port (default: 7474)
+user | -u, -\-user | The neo4j user (default: neo4j)
+password | -p, -\-password | The neo4j password (default: neo4j)
+max unit size |-m, -\-maxUnitSize | The maximum size of complexes/sets from which interactions are considered significant. (default: 4)
+species | -s, -\-species |1 or more species from which the interactions will be fetched. ALL to export all of the species (default: Homo sapiens)
+object | -O, -\-object | 1 or more objects to export interactions under these objects, species will be ignored.
+simple entities policy | -t, -\-simpleEntitiesPolicy | Set if simple entities are exported as well: ALL, NONE or NON\_TRIVIAL. (default: NON\_TRIVIAL)
+output prefix | -o, -\-output | Prefix of the output files
+verbose | -v, -\-verbose | Requests verbose output
 
-## Standalone
-Interactor exporter can also be used as a standalone jar executable. You will find the latest version in bin path.
-```
-	java -jar interaction-exporter -
-```
 ## Methods
 This is a detailed guide about how interactions are inferred in Reactome.
 
