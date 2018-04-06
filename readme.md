@@ -52,6 +52,13 @@ simple entities policy | -t, -\-simpleEntitiesPolicy | Set if simple entities ar
 output prefix | -o, -\-output | Prefix of the output files
 verbose | -v, -\-verbose | Requests verbose output
 
+#### Note
+The "output prefix" is used to concatenate with two extensions: ".psi-mitab.txt" and ".tab-delimited.txt". Therefore, when the output parameter is
+```
+-o path/to/folder/filename
+```
+There will be two files generated in the folder: "filename.psi-mitab.txt" and "filename.tab-delimited.txt".
+
 ## Methods
 This is a detailed guide about how interactions are inferred in Reactome.
 
