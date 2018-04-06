@@ -6,4 +6,6 @@ public interface InteractionWriter {
 
 	void write(Interaction interaction);
 
+	void close();
+
 }

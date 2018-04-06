@@ -52,6 +52,11 @@ public class TsvWriter implements InteractionWriter {
 		output.println(String.join(SEPARATOR, line));
 	}
 
+	@Override
+	public void close() {
+		output.close();
+	}
+
 	private String type(DatabaseObject context) {
 		if (context instanceof Complex)
 			return "complex";

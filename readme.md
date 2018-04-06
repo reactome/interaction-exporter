@@ -14,19 +14,110 @@ Two molecules are reported as interactors, if:
 2. they are inputs of the same reaction
 3. one of them is the catalyst of a reaction and the other one is an input of that reaction.
 
-Interactions are not oriented: if _a_ interacts with _b_, then _b_ interacts with _a_, so only one interaction is exported. However, duplicated interaction could appear as uniqueness is only warranted at the level of Reactome stable identifiers. If two Reactome objects with different stable identifiers point to the same protein, it is not considered as duplicated.
+Interactions are not oriented: if _a_ interacts with _b_, then _b_ interacts with _a_, so only one interaction is exported. However, duplicated interaction can appear since uniqueness is only warranted at the level of Reactome stable identifiers. If two Reactome objects with different stable identifiers point to the same protein, it is not considered as duplicated.
 ## Instalation
 To use Interaction exporter as a library, add it to your project using maven.
 
 ```
 <dependencies>
 	<dependency>
-            <groupId>org.reactome.server.tools</groupId>
-            <artifactId>interaction-exporter</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
-        </dependency>
+		<groupId>org.reactome.server.tools</groupId>
+		<artifactId>interaction-exporter</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+	</dependency>
+	<!-- More dependencies -->
+</dependencies>
 ```
 
+## Usage
+As any project using graph core, you must initialise the Graph Core to connect to the reactome graph database:
+```
+ReactomeGraphCore.initialise(host, port, user, password, GraphCoreConfig.class);
+```
+*GraphCoreConfig* should extend Neo4jConfig (see https://github.com/reactome/graph-core)
+```java
+
+/**
+ * Config the neo4j graph data base.
+ *
+ * @author Chuan-Deng dengchuanbio@gmail.com
+ */
+@org.springframework.context.annotation.Configuration
+@ComponentScan(basePackages = {"org.reactome.server.graph"})
+@EnableTransactionManagement
+@EnableNeo4jRepositories(basePackages = {"org.reactome.server.graph.repository"})
+@EnableSpringConfigured
+public class GraphCoreConfig extends Neo4jConfig {
+	private SessionFactory sessionFactory;
+	private Logger logger = LoggerFactory.getLogger(GraphCoreConfig.class);
+
+	@Bean
+	public Configuration getConfiguration() {
+		Configuration config = new Configuration();
+		config.driverConfiguration()
+//                .setDriverClassName(System.getProperty("neo4j.driver")) // <neo4j.driver>org.neo4j.ogm.drivers.http.driver.HttpDriver</neo4j.driver>
+				.setDriverClassName("org.neo4j.ogm.drivers.http.driver.HttpDriver")
+				.setURI("http://".concat(System.getProperty("neo4j.host")).concat(":").concat(System.getProperty("neo4j.port")))
+				.setCredentials(System.getProperty("neo4j.user"), System.getProperty("neo4j.password"));
+		return config;
+	}
+
+	@Override
+	@Bean
+	public SessionFactory getSessionFactory() {
+		if (sessionFactory == null) {
+			logger.info("Creating a Neo4j SessionFactory");
+			sessionFactory = new SessionFactory(getConfiguration(), "org.reactome.server.graph.domain");
+		}
+		return sessionFactory;
+	}
+}
+```
+
+To create a list of interactions in a certain object:
+```
+List<Interaction> interactions = InteractionExporter.stream(exporter -> exporter.setObject("R-HSA-182548"))
+		.collect(Collectors.toList());
+```
+The *stream* method gives you an instance of InteractorExporter that you can configure. As a result, you get a stream of Interactions.
+
+Example of exploring all Homo sapiens interactions:
+```
+List<Interaction> interactions = InteractionExporter.stream(exporter -> exporter.setSpecies("Homo sapiens"))
+		.collect(Collectors.toList());
+```
+As objects in reactome contain an arbitrary number of components, and to avoid a large amount of interactions, there is a limit in the size of the objects that you can configure.
+```
+List<Interaction> interactions = InteractionExporter.stream(exporter -> exporter
+			.setSpecies("Homo sapiens")
+			.setMaxUnitSize(10))
+		.collect(Collectors.toList());
+```
+In the same line of avoiding many interactions, those interactions where at least one of the participants is a small molecule can be discarded:
+```
+List<Interaction> interactions = InteractionExporter.stream(exporter -> exporter
+			.setSpecies("Homo sapiens")
+			.setMaxUnitSize(10)
+			.setSimpleEntityPolicy(SimpleEntityPolicy.NONE))
+		.collect(Collectors.toList());
+```
+Usually, interactions are exported to a file. We support two types of files: PSI-MITAB (v2.7) and TSV. Use the InteractionWriter subclasses to export.
+
+```
+OutputStream os = new FileOutputStream("Homo.sapiens.tab27");
+InteractionWriter writer = new Tab27Writer(os);
+InteractionExporter.stream(exporter -> exporter
+		.setMaxUnitSize(8)
+		.setSimpleEntityPolicy(SimpleEntityPolicy.NON_TRIVIAL)
+		.setSpecies("Homo sapiens"))
+		.forEach(writer::write);
+```
+
+## Standalone
+Interactor exporter can also be used as a standalone jar executable. You will find the latest version in bin path.
+```
+	java -jar interaction-exporter -
+```
 ## Methods
 This is a detailed guide about how interactions are inferred in Reactome.
 
@@ -181,7 +272,7 @@ Context | Interactor A | Interactor B | Type
 --- | --- | --- | ---
 Reaction1|PhysicalEntity1|PhysicalEntity2|Chemical
 
-The molecule that acts as the catalyst is the active unit of the catalyst activity, if, and only if, one active unit is specified. If zero or more than one active units are specified, then the physical entity is used as catalyst.
+The molecule that acts as the catalyst is the active unit of the catalyst activity, if, and only if, one active unit is specified. If zero or more than one active units are specified, then the physical entity is used as catalyst. When the input is the same molecule as the catalyst, no interactions are exported.
 
 The input must be formed by one relevant molecule (protein, complex, polymer) and zero or more small molecules (cofactors). If the input is a set (with or without cofactors), every member of the input is interacted with the catalyst. If the input is just one small molecule, then it is used as input.
 
@@ -190,9 +281,9 @@ The type of this interaction depends on the GO-Molecular-function term associate
 BlackBoxEvents are ignored.
 
 ### PSI-MITAB output
-Results are exported using PSI-MITAB version 27. 
+Results are exported using PSI-MITAB version 27 (https://github.com/HUPO-PSI/miTab/blob/master/PSI-MITAB27Format.md). 
 
-column | name | multiplicity | value (db:id:text) | source
+column | name | multiplicity | value, as (db):(id):(text) | source
 --- | --- | --- | --- | ---
 1, 2 | interactor unique identifier | 1 | (ChEBI, reactome, uniprotkb):(\*) | uniprotkb for proteins, ChEBI for small molecules, reactome as default
 3, 4 | interactor alternative identifiers | 0..* | (\*):(\*) | any other identifier

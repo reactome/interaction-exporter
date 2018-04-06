@@ -32,5 +32,10 @@ public class Tab27Writer implements InteractionWriter {
 		writer.println(trimmed);
 	}
 
+	@Override
+	public void close() {
+		writer.close();
+	}
+
 
 }
