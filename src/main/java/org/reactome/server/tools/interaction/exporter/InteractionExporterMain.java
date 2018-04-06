@@ -11,11 +11,11 @@ import org.reactome.server.tools.interaction.exporter.writer.Tab27Writer;
 import org.reactome.server.tools.interaction.exporter.writer.TsvWriter;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class InteractionExporterMain {
 
@@ -27,23 +27,21 @@ public class InteractionExporterMain {
 	private static final String SPECIES = "species";
 	private static final String SIMPLE_ENTITIES_POLICY = "simpleEntitiesPolicy";
 	private static final String OUTPUT = "output";
-	private static final String FORMAT = "format";
 	private static final String OBJECT = "object";
 	private static final String VERBOSE = "verbose";
 
-	public static void main(String[] args) throws JSAPException, FileNotFoundException {
+	public static void main(String[] args) throws JSAPException {
 		final Parameter[] parameters = {
-				new FlaggedOption(HOST, 					JSAP.STRING_PARSER,	"localhost",	JSAP.REQUIRED,	  'h',	HOST, 				"The neo4j host"),
-				new FlaggedOption(PORT, 					JSAP.STRING_PARSER,	"7474",	 		JSAP.REQUIRED,	  'b',	PORT, 				"The neo4j port"),
-				new FlaggedOption(USER, 					JSAP.STRING_PARSER,	"neo4j",	 	JSAP.REQUIRED,	  'u',	USER, 				"The neo4j user"),
-				new FlaggedOption(PASSWORD, 				JSAP.STRING_PARSER,	"neo4j",	 	JSAP.REQUIRED,	  'p',	PASSWORD, 			"The neo4j password"),
-				new FlaggedOption(MAX_UNIT_SIZE, 			JSAP.INTEGER_PARSER,"4",	 		JSAP.NOT_REQUIRED,'m',	MAX_UNIT_SIZE,		"The maximum size of complexes/sets from which interactions are considered significant."),
-				new FlaggedOption(SPECIES, 					JSAP.STRING_PARSER,	"Homo sapiens", JSAP.NOT_REQUIRED,'s',	SPECIES,			"1 or more species from which the interactions will be fetched. All for all").setAllowMultipleDeclarations(true),
-				new FlaggedOption(OBJECT, 					JSAP.STRING_PARSER,	null,			JSAP.NOT_REQUIRED,'O',	OBJECT,				"Export interactions under this objects, species will be ignored").setAllowMultipleDeclarations(true),
-				new FlaggedOption(SIMPLE_ENTITIES_POLICY, 	JSAP.STRING_PARSER,	"non_trivial",	JSAP.NOT_REQUIRED,'t',	SIMPLE_ENTITIES_POLICY,"Set if simple entities are exported as well"),
-				new FlaggedOption(OUTPUT, 					JSAP.STRING_PARSER,	null, 			JSAP.REQUIRED,	  'o',	OUTPUT,				"Name of the output file"),
-				new FlaggedOption(FORMAT, 					JSAP.STRING_PARSER,	"PSI",	 		JSAP.NOT_REQUIRED,'f',	FORMAT, 			"PSI or TSV"),
-				new QualifiedSwitch(VERBOSE, 				JSAP.BOOLEAN_PARSER,   JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED,'v',	VERBOSE,			"Requests verbose output" )
+				new FlaggedOption(HOST, JSAP.STRING_PARSER, "localhost", JSAP.REQUIRED, 'h', HOST, "The neo4j host"),
+				new FlaggedOption(PORT, JSAP.STRING_PARSER, "7474", JSAP.REQUIRED, 'b', PORT, "The neo4j port"),
+				new FlaggedOption(USER, JSAP.STRING_PARSER, "neo4j", JSAP.REQUIRED, 'u', USER, "The neo4j user"),
+				new FlaggedOption(PASSWORD, JSAP.STRING_PARSER, "neo4j", JSAP.REQUIRED, 'p', PASSWORD, "The neo4j password"),
+				new FlaggedOption(MAX_UNIT_SIZE, JSAP.INTEGER_PARSER, "4", JSAP.NOT_REQUIRED, 'm', MAX_UNIT_SIZE, "The maximum size of complexes/sets from which interactions are considered significant."),
+				new FlaggedOption(SPECIES, JSAP.STRING_PARSER, "Homo sapiens", JSAP.NOT_REQUIRED, 's', SPECIES, "1 or more species from which the interactions will be fetched. All for all").setAllowMultipleDeclarations(true),
+				new FlaggedOption(OBJECT, JSAP.STRING_PARSER, null, JSAP.NOT_REQUIRED, 'O', OBJECT, "Export interactions under this objects, species will be ignored").setAllowMultipleDeclarations(true),
+				new FlaggedOption(SIMPLE_ENTITIES_POLICY, JSAP.STRING_PARSER, "non_trivial", JSAP.NOT_REQUIRED, 't', SIMPLE_ENTITIES_POLICY, "Set if simple entities are exported as well"),
+				new FlaggedOption(OUTPUT, JSAP.STRING_PARSER, null, JSAP.REQUIRED, 'o', OUTPUT, "Prefix of the output files"),
+				new QualifiedSwitch(VERBOSE, JSAP.BOOLEAN_PARSER, JSAP.NO_DEFAULT, JSAP.NOT_REQUIRED, 'v', VERBOSE, "Requests verbose output")
 		};
 		final SimpleJSAP jsap = new SimpleJSAP("Reactome interaction exporter", "A tool for exporting molecular interactions from the Reactome database",
 				parameters);
@@ -56,9 +54,12 @@ public class InteractionExporterMain {
 		final String policy = config.getString(SIMPLE_ENTITIES_POLICY);
 		final SimpleEntityPolicy simpleEntityPolicy = getSimpleEntityPolicy(policy);
 
-		final String format = config.getString(FORMAT);
-		final String output = config.getString(OUTPUT);
-		final InteractionWriter writer = getWriter(format, output, verbose);
+		final String prefix = config.getString(OUTPUT);
+		if (verbose) {
+			System.out.println("prefix             = " + new File(prefix).getAbsolutePath());
+			System.out.println("maxUnitSize        = " + maxUnitSize);
+			System.out.println("simpleEntityPolicy = " + simpleEntityPolicy);
+		}
 
 		ReactomeGraphCore.initialise(config.getString(HOST),
 				config.getString(PORT),
@@ -66,38 +67,25 @@ public class InteractionExporterMain {
 				config.getString(PASSWORD),
 				GraphCoreConfig.class);
 
-		final String[] objects = config.getStringArray(OBJECT);
-		if (objects == null || objects.length == 0) {
-			final String[] speciesArg = config.getStringArray(SPECIES);
-			exportSpecies(maxUnitSize, simpleEntityPolicy, writer, verbose, speciesArg);
-		} else {
-			exportObjects(maxUnitSize, simpleEntityPolicy, writer, verbose, objects);
-		}
-		writer.close();
-	}
-
-	private static void exportObjects(int maxUnitSize, SimpleEntityPolicy simpleEntityPolicy, InteractionWriter writer, boolean verbose, String[] objects) {
-		if (verbose) {
-			System.out.println("maxUnitSize        = " + maxUnitSize);
-			System.out.println("simpleEntityPolicy = " + simpleEntityPolicy);
-			System.out.println("objects            = " + Arrays.toString(objects));
-		}
-		for (String object : objects) {
-			InteractionExporter.stream(exporter -> exporter
-					.setObject(object)
-					.setVerbose(verbose)
-					.setMaxUnitSize(maxUnitSize)
-					.setSimpleEntityPolicy(simpleEntityPolicy))
-					.forEach(writer::write);
+		try (InteractionWriter tabWriter = new Tab27Writer(new FileOutputStream(prefix + ".psi-mitab.txt"));
+		     InteractionWriter tsvWriter = new TsvWriter(new FileOutputStream(prefix + ".tab-delimited.txt"))) {
+			final String[] objects = config.getStringArray(OBJECT);
+			final String[] species = config.getStringArray(SPECIES);
+			final Stream<Interaction> stream = objects == null || objects.length == 0
+					? streamSpecies(maxUnitSize, simpleEntityPolicy, verbose, species)
+					: streamObjects(maxUnitSize, simpleEntityPolicy, verbose, objects);
+			stream.forEach(interaction -> {
+				tabWriter.write(interaction);
+				tsvWriter.write(interaction);
+			});
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
-	private static void exportSpecies(int maxUnitSize, SimpleEntityPolicy simpleEntityPolicy, InteractionWriter writer, boolean verbose, String[] speciesArg) {
-		if (verbose) {
-			System.out.println("maxUnitSize        = " + maxUnitSize);
-			System.out.println("simpleEntityPolicy = " + simpleEntityPolicy);
+	private static Stream<Interaction> streamSpecies(int maxUnitSize, SimpleEntityPolicy simpleEntityPolicy, boolean verbose, String[] speciesArg) {
+		if (verbose)
 			System.out.println("species            = " + Arrays.toString(speciesArg));
-		}
 		final SpeciesService speciesService = ReactomeGraphCore.getService(SpeciesService.class);
 		final List<Species> species;
 		if (speciesArg.length == 1 && speciesArg[0].equalsIgnoreCase("all"))
@@ -105,33 +93,13 @@ public class InteractionExporterMain {
 		else species = Arrays.stream(speciesArg)
 				.map(speciesService::getSpecies)
 				.collect(Collectors.toList());
-		species.stream().
-				map(Species::getDisplayName)
-				.forEach(specie -> InteractionExporter.stream(exporter -> exporter
+		return species.stream()
+				.map(Species::getDisplayName)
+				.flatMap(specie -> InteractionExporter.stream(exporter -> exporter
 						.setSpecies(specie)
 						.setVerbose(verbose)
 						.setMaxUnitSize(maxUnitSize)
-						.setSimpleEntityPolicy(simpleEntityPolicy))
-						.forEach(writer::write));
-	}
-
-	private static InteractionWriter getWriter(String format, String output, boolean verbose) throws FileNotFoundException {
-		if (verbose)
-			System.out.println("output = " + new File(output).getAbsolutePath());
-		final InteractionWriter writer;
-		switch (format.toLowerCase()) {
-			case "txt":
-			case "tsv":
-				writer = new TsvWriter(new FileOutputStream(output));
-				break;
-			case "tab":
-			case "psi":
-			case "psi-mitab":
-			case "mitab":
-			default:
-				writer = new Tab27Writer(new FileOutputStream(output));
-		}
-		return writer;
+						.setSimpleEntityPolicy(simpleEntityPolicy)));
 	}
 
 	private static SimpleEntityPolicy getSimpleEntityPolicy(String policy) {
@@ -149,5 +117,16 @@ public class InteractionExporterMain {
 				break;
 		}
 		return simpleEntityPolicy;
+	}
+
+	private static Stream<Interaction> streamObjects(int maxUnitSize, SimpleEntityPolicy simpleEntityPolicy, boolean verbose, String[] objects) {
+		if (verbose)
+			System.out.println("objects            = " + Arrays.toString(objects));
+		return Arrays.stream(objects).flatMap(object ->
+				InteractionExporter.stream(exporter -> exporter
+						.setObject(object)
+						.setVerbose(verbose)
+						.setMaxUnitSize(maxUnitSize)
+						.setSimpleEntityPolicy(simpleEntityPolicy)));
 	}
 }
