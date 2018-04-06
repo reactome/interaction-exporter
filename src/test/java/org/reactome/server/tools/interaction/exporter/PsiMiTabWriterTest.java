@@ -1,12 +1,11 @@
 package org.reactome.server.tools.interaction.exporter;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.interaction.exporter.psi.InteractionFactory;
 import org.reactome.server.tools.interaction.exporter.util.Constants;
-import org.reactome.server.tools.interaction.exporter.util.GraphCoreConfig;
 import psidev.psi.mi.tab.model.builder.MitabWriterUtils;
 import psidev.psi.mi.tab.model.builder.PsimiTabVersion;
 
@@ -18,8 +17,8 @@ import static org.reactome.server.tools.interaction.exporter.TestUtils.getById;
 public class PsiMiTabWriterTest {
 
 	@BeforeAll
-	public static void beforeAll() {
-		ReactomeGraphCore.initialise("localhost", "7474", "neo4j", "reactome", GraphCoreConfig.class);
+	public static void setUp() {
+		Assumptions.assumeTrue(TestUtils.hasConnection());
 	}
 
 	@Test

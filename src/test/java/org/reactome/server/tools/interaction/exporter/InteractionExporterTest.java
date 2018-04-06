@@ -15,7 +15,7 @@ public class InteractionExporterTest {
 	private static final String HOMO_SAPIENS = "Homo sapiens";
 
 	@BeforeEach
-	public void beforeEach() {
+	public void setUp() {
 		Assumptions.assumeTrue(hasConnection());
 	}
 
