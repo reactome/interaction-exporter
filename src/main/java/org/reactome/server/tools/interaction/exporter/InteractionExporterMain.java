@@ -43,7 +43,7 @@ public class InteractionExporterMain {
 				new FlaggedOption(OUTPUT,                   JSAP.STRING_PARSER,     null,               JSAP.REQUIRED,      'o', OUTPUT,                    "Prefix of the output files"),
 				new QualifiedSwitch(VERBOSE,                JSAP.BOOLEAN_PARSER,    JSAP.NO_DEFAULT,    JSAP.NOT_REQUIRED,  'v', VERBOSE,                   "Requests verbose output")
 		};
-		final SimpleJSAP jsap = new SimpleJSAP("Reactome interaction exporter", "A tool for exporting molecular interactions from the Reactome database",
+		final SimpleJSAP jsap = new SimpleJSAP("Reactome interaction exporter", "Exports molecular interactions inferred from Reactome content",
 				parameters);
 		final JSAPResult config = jsap.parse(args);
 		if (jsap.messagePrinted()) System.exit(1);
@@ -84,8 +84,6 @@ public class InteractionExporterMain {
 	}
 
 	private static Stream<Interaction> streamSpecies(int maxUnitSize, SimpleEntityPolicy simpleEntityPolicy, boolean verbose, String[] speciesArg) {
-		if (verbose)
-			System.out.println("species            = " + Arrays.toString(speciesArg));
 		final SpeciesService speciesService = ReactomeGraphCore.getService(SpeciesService.class);
 		final List<Species> species;
 		if (speciesArg.length == 1 && speciesArg[0].equalsIgnoreCase("all"))
@@ -93,8 +91,13 @@ public class InteractionExporterMain {
 		else species = Arrays.stream(speciesArg)
 				.map(speciesService::getSpecies)
 				.collect(Collectors.toList());
+		if (verbose)
+			System.out.println("species            = " + species.stream().map(Species::getDisplayName).collect(Collectors.joining(", ")));
 		return species.stream()
 				.map(Species::getDisplayName)
+				.peek(s -> {
+					if (verbose) System.out.printf("%n%s", s);
+				})
 				.flatMap(specie -> InteractionExporter.stream(exporter -> exporter
 						.setSpecies(specie)
 						.setVerbose(verbose)
