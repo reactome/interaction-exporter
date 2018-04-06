@@ -67,7 +67,11 @@ public class ProgressBar {
 	}
 
 	public void restart() {
-		printStream.println();
+		if (timer != null){
+			timer.cancel();
+			printProgress();
+			printStream.println();
+		}
 		started = false;
 	}
 }
