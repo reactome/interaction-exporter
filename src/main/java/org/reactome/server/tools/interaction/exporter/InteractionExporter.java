@@ -9,6 +9,7 @@ import org.reactome.server.tools.interaction.exporter.util.ProgressBar;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
@@ -83,7 +84,7 @@ public class InteractionExporter {
 						.flatMap(Collection::stream)
 						.peek(o -> {
 							count.incrementAndGet();
-							final String progress = String.format("%d/%d %s:%s", count.get(), total.get(), o.getSchemaClass(), o.getStId());
+							final String progress = String.format(Locale.ENGLISH, "%,6d / %,6d \t%s:%s", count.get(), total.get(), o.getSchemaClass(), o.getStId());
 							bar.setProgress(count.doubleValue() / total.doubleValue(), progress);
 						})
 						.map(collector::explore)
