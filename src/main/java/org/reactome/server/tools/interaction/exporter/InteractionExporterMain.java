@@ -101,7 +101,7 @@ public class InteractionExporterMain {
 		final SpeciesService speciesService = ReactomeGraphCore.getService(SpeciesService.class);
 		final List<Species> species;
 		if (speciesArg.length == 1 && speciesArg[0].equalsIgnoreCase("all"))
-			species = speciesService.getAllSpecies();
+			species = speciesService.getSpecies();
 		else species = Arrays.stream(speciesArg)
 				.map(speciesService::getSpecies)
 				.collect(Collectors.toList());
