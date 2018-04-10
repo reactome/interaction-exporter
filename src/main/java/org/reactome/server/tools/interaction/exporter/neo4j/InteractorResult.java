@@ -1,4 +1,4 @@
-package org.reactome.server.tools.interaction.exporter.model;
+package org.reactome.server.tools.interaction.exporter.neo4j;
 
 import org.reactome.server.tools.interaction.exporter.psi.SimpleCrossReference;
 import org.reactome.server.tools.interaction.exporter.psi.SimpleFeature;

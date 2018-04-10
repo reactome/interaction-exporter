@@ -1,7 +1,7 @@
 package org.reactome.server.tools.interaction.exporter.writer;
 
 import org.reactome.server.graph.domain.model.*;
-import org.reactome.server.tools.interaction.exporter.Interaction;
+import org.reactome.server.tools.interaction.exporter.model.Interaction;
 import org.reactome.server.tools.interaction.exporter.util.Constants;
 import org.reactome.server.tools.interaction.exporter.util.IdentifierResolver;
 import psidev.psi.mi.tab.model.CrossReference;

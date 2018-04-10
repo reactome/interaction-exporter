@@ -1,8 +1,8 @@
 package org.reactome.server.tools.interaction.exporter.psi;
 
 import org.reactome.server.graph.domain.model.*;
-import org.reactome.server.tools.interaction.exporter.Interaction;
-import org.reactome.server.tools.interaction.exporter.InteractionType;
+import org.reactome.server.tools.interaction.exporter.model.Interaction;
+import org.reactome.server.tools.interaction.exporter.model.InteractionType;
 import org.reactome.server.tools.interaction.exporter.util.Constants;
 import org.reactome.server.tools.interaction.exporter.util.IdentifierResolver;
 import psidev.psi.mi.tab.model.*;
@@ -44,7 +44,7 @@ public class InteractionFactory {
 		return psiInteraction;
 	}
 
-	private static Interactor createInteractor(org.reactome.server.tools.interaction.exporter.Interactor inter) {
+	private static Interactor createInteractor(org.reactome.server.tools.interaction.exporter.model.Interactor inter) {
 		final PhysicalEntity entity = inter.getEntity();
 		final Interactor interactor = new Interactor();
 		final List<CrossReference> identifiers = IdentifierResolver.getIdentifiers(entity);

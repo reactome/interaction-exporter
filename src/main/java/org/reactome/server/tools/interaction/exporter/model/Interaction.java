@@ -1,4 +1,4 @@
-package org.reactome.server.tools.interaction.exporter;
+package org.reactome.server.tools.interaction.exporter.model;
 
 import org.reactome.server.graph.domain.model.DatabaseObject;
 

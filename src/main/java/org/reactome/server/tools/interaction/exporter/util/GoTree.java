@@ -1,7 +1,5 @@
 package org.reactome.server.tools.interaction.exporter.util;
 
-import org.reactome.server.tools.interaction.exporter.InteractionType;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +22,7 @@ public class GoTree {
 	private final static Pattern ID_PATTERN = Pattern.compile("id:\\s+(GO:\\d+)");
 
 	public static List<Term> readGo() {
-		final InputStream resource = InteractionType.class.getResourceAsStream("go.obo");
+		final InputStream resource = GoTree.class.getResourceAsStream("go.obo");
 		final List<Term> terms = new LinkedList<>();
 		try (BufferedReader reader = new BufferedReader(new InputStreamReader(resource))) {
 			final AtomicReference<String> currentTerm = new AtomicReference<>();

@@ -1,6 +1,6 @@
 package org.reactome.server.tools.interaction.exporter.writer;
 
-import org.reactome.server.tools.interaction.exporter.Interaction;
+import org.reactome.server.tools.interaction.exporter.model.Interaction;
 import org.reactome.server.tools.interaction.exporter.psi.InteractionFactory;
 import psidev.psi.mi.tab.model.BinaryInteraction;
 import psidev.psi.mi.tab.model.builder.MitabWriterUtils;

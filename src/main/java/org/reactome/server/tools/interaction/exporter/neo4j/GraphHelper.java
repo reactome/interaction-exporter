@@ -1,11 +1,9 @@
-package org.reactome.server.tools.interaction.exporter.psi;
+package org.reactome.server.tools.interaction.exporter.neo4j;
 
 import org.apache.commons.collections.map.LRUMap;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
-import org.reactome.server.tools.interaction.exporter.model.ContextResult;
-import org.reactome.server.tools.interaction.exporter.model.InteractorResult;
 
 import java.util.Collections;
 import java.util.Map;

@@ -2,6 +2,9 @@ package org.reactome.server.tools.interaction.exporter;
 
 import org.junit.jupiter.api.*;
 import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
+import org.reactome.server.tools.interaction.exporter.model.Interaction;
+import org.reactome.server.tools.interaction.exporter.model.InteractionType;
+import org.reactome.server.tools.interaction.exporter.model.Interactor;
 import org.reactome.server.tools.interaction.exporter.util.Constants;
 
 import java.util.*;

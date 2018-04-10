@@ -5,6 +5,7 @@ import org.reactome.server.graph.domain.model.Species;
 import org.reactome.server.graph.service.SpeciesService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
+import org.reactome.server.tools.interaction.exporter.model.Interaction;
 import org.reactome.server.tools.interaction.exporter.util.GraphCoreConfig;
 import org.reactome.server.tools.interaction.exporter.writer.InteractionWriter;
 import org.reactome.server.tools.interaction.exporter.writer.Tab27Writer;

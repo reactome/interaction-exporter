@@ -2,6 +2,9 @@ package org.reactome.server.tools.interaction.exporter;
 
 import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
+import org.reactome.server.tools.interaction.exporter.model.Interaction;
+import org.reactome.server.tools.interaction.exporter.model.InteractionType;
+import org.reactome.server.tools.interaction.exporter.model.Interactor;
 import org.reactome.server.tools.interaction.exporter.util.Constants;
 import psidev.psi.mi.tab.model.CrossReference;
 
@@ -19,7 +22,7 @@ class InteractionExplorer {
 	 * is necessary because a physical entity can be several times in a context
 	 * in different parts of the tree.
 	 */
-	private Collection<Interaction> interactions;
+	private Collection<org.reactome.server.tools.interaction.exporter.model.Interaction> interactions;
 
 	/**
 	 * Configures a collector with a specific behaviour. The collector can be
@@ -37,7 +40,7 @@ class InteractionExplorer {
 	 *
 	 * @see InteractionExporter
 	 */
-	Collection<Interaction> explore(DatabaseObject object) {
+	Collection<org.reactome.server.tools.interaction.exporter.model.Interaction> explore(DatabaseObject object) {
 		interactions = new HashSet<>();
 		if (object instanceof Polymer)
 			explorePolymer((Polymer) object);
@@ -176,12 +179,12 @@ class InteractionExplorer {
 				? Constants.UNSPECIFIED_ROLE : Constants.ENZYME;
 		final CrossReference bRole = type == InteractionType.PHYSICAL
 				? Constants.UNSPECIFIED_ROLE : Constants.ENZYME_TARGET;
-		collect(new Interaction(type, context, new Interactor(A, Ast, aRole), new Interactor(B, Bst, bRole)));
+		collect(new org.reactome.server.tools.interaction.exporter.model.Interaction(type, context, new Interactor(A, Ast, aRole), new Interactor(B, Bst, bRole)));
 	}
 
-	private void collect(Interaction interaction) {
+	private void collect(org.reactome.server.tools.interaction.exporter.model.Interaction interaction) {
 		// Is there a similar interaction with different stoichiometry?
-		final Interaction other = interactions.stream()
+		final org.reactome.server.tools.interaction.exporter.model.Interaction other = interactions.stream()
 				.filter(interaction::equalsIgnoreStoichiometry)
 				.findFirst().orElse(null);
 		if (other == null) interactions.add(interaction);
@@ -200,7 +203,7 @@ class InteractionExplorer {
 	 *     interactionB.a.stoichiometry + interactionB.b.stoichiometry)
 	 * </pre>.
 	 */
-	private Interaction bestStoichiometry(Interaction interactionA, Interaction interactionB) {
+	private org.reactome.server.tools.interaction.exporter.model.Interaction bestStoichiometry(org.reactome.server.tools.interaction.exporter.model.Interaction interactionA, Interaction interactionB) {
 		final long a = interactionA.getA().getStoichiometry() + interactionA.getB().getStoichiometry();
 		final long b = interactionB.getA().getStoichiometry() + interactionB.getB().getStoichiometry();
 		return a < b ? interactionA : interactionB;

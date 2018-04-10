@@ -1,6 +1,6 @@
 package org.reactome.server.tools.interaction.exporter.writer;
 
-import org.reactome.server.tools.interaction.exporter.Interaction;
+import org.reactome.server.tools.interaction.exporter.model.Interaction;
 
 public interface InteractionWriter extends AutoCloseable {
 

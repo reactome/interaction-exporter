@@ -1,7 +1,8 @@
 package org.reactome.server.tools.interaction.exporter.psi;
 
-import org.reactome.server.tools.interaction.exporter.model.ContextResult;
-import org.reactome.server.tools.interaction.exporter.model.InteractorResult;
+import org.reactome.server.tools.interaction.exporter.neo4j.ContextResult;
+import org.reactome.server.tools.interaction.exporter.neo4j.GraphHelper;
+import org.reactome.server.tools.interaction.exporter.neo4j.InteractorResult;
 import org.reactome.server.tools.interaction.exporter.util.Constants;
 import psidev.psi.mi.tab.model.*;
 

@@ -5,6 +5,7 @@ import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.service.SchemaService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
+import org.reactome.server.tools.interaction.exporter.model.Interaction;
 import org.reactome.server.tools.interaction.exporter.util.ProgressBar;
 
 import java.util.Collection;
@@ -30,7 +31,7 @@ public class InteractionExporter {
 	private InteractionExporter() {
 	}
 
-	public static Stream<Interaction> stream(Consumer<InteractionExporter> consumer) {
+	public static Stream<org.reactome.server.tools.interaction.exporter.model.Interaction> stream(Consumer<InteractionExporter> consumer) {
 		final InteractionExporter exporter = new InteractionExporter();
 		consumer.accept(exporter);
 		return exporter.stream();
