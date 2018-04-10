@@ -88,7 +88,8 @@ public class InteractionExporter {
 							bar.setProgress(count.doubleValue() / total.doubleValue(), progress);
 						})
 						.map(collector::explore)
-						.flatMap(Collection::stream);
+						.flatMap(Collection::stream)
+						.onClose(bar::clear);
 			} else {
 				return Stream.of(Polymer.class, Complex.class, ReactionLikeEvent.class)
 						.map(reactomeClass -> SCHEMA_SERVICE.getByClass(reactomeClass, species))
