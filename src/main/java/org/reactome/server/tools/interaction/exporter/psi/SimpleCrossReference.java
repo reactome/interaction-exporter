@@ -59,7 +59,7 @@ public class SimpleCrossReference implements psidev.psi.mi.tab.model.CrossRefere
 				? null
 				: databases.getOrDefault(database, database);
 		// In case database is go
-		setIdentifier(identifier);
+		if (identifier != null) setIdentifier(identifier);
 	}
 
 	@Override
