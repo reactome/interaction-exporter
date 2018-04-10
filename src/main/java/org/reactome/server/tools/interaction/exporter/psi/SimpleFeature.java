@@ -12,6 +12,9 @@ public class SimpleFeature implements Feature {
 	private List<String> ranges;
 	private String text;
 
+	public SimpleFeature() {
+	}
+
 	SimpleFeature(TranslationalModification residue) {
 		setFeatureType(residue.getPsiMod().getName().get(0));
 		setText("MOD:" + residue.getPsiMod().getIdentifier());
@@ -48,5 +51,10 @@ public class SimpleFeature implements Feature {
 	@Override
 	public void setText(String text) {
 		this.text = text;
+	}
+
+	@Override
+	public String toString() {
+		return type + ":" + text + ":" + ranges;
 	}
 }

@@ -34,15 +34,18 @@ public class SimpleCrossReference implements psidev.psi.mi.tab.model.CrossRefere
 	private String identifier;
 	private String text;
 
-	public SimpleCrossReference(String database, String identifier, String text) {
-		setDatabase(database);
-		setIdentifier(identifier);
-		this.text = text;
+	public SimpleCrossReference() {
 	}
 
 	public SimpleCrossReference(String database, String identifier) {
 		setDatabase(database);
-		this.identifier = identifier;
+		setIdentifier(identifier);
+	}
+
+	public SimpleCrossReference(String database, String identifier, String text) {
+		setDatabase(database);
+		setIdentifier(identifier);
+		setText(text);
 	}
 
 	@Override
@@ -55,6 +58,8 @@ public class SimpleCrossReference implements psidev.psi.mi.tab.model.CrossRefere
 		this.database = database == null
 				? null
 				: databases.getOrDefault(database, database);
+		// In case database is go
+		setIdentifier(identifier);
 	}
 
 	@Override

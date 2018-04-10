@@ -12,8 +12,10 @@ import org.reactome.server.tools.interaction.exporter.writer.TsvWriter;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -29,6 +31,7 @@ public class InteractionExporterMain {
 	private static final String OUTPUT = "output";
 	private static final String OBJECT = "object";
 	private static final String VERBOSE = "verbose";
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH);
 
 	public static void main(String[] args) throws JSAPException {
 		final Parameter[] parameters = {
@@ -69,6 +72,7 @@ public class InteractionExporterMain {
 
 		try (InteractionWriter tabWriter = new Tab27Writer(new FileOutputStream(prefix + ".psi-mitab.txt"));
 		     InteractionWriter tsvWriter = new TsvWriter(new FileOutputStream(prefix + ".tab-delimited.txt"))) {
+			final long start = System.nanoTime();
 			final String[] objects = config.getStringArray(OBJECT);
 			final String[] species = config.getStringArray(SPECIES);
 			final Stream<Interaction> stream = objects == null || objects.length == 0
@@ -78,6 +82,10 @@ public class InteractionExporterMain {
 				tabWriter.write(interaction);
 				tsvWriter.write(interaction);
 			});
+			final long end = System.nanoTime();
+			final long millis = (end - start) / 1000000;
+			System.out.println();
+			System.out.println(DATE_FORMAT.format(millis));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

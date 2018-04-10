@@ -78,7 +78,7 @@ public class InteractionExporter {
 						.map(aClass -> SCHEMA_SERVICE.getByClass(aClass, species))
 						.peek(collection -> {
 							total.set(collection.size());
-							bar.restart();
+							bar.clear();
 							count.set(0);
 						})
 						.flatMap(Collection::stream)

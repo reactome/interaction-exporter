@@ -26,7 +26,7 @@ public class PsiMiTabWriterTest {
 		final String expected = "" +
 				"uniprotkb:O60542\tuniprotkb:Q9GZZ7" +
 				"\treactome:R-HSA-434907|refseq:NP_004149.1|ENSEMBL:ENSG00000125650|entrezgene/locuslink:5623" +
-				"\treactome:R-HSA-434900|refseq:NP_071422.1|refseq:NP_665705.1|refseq:XP_005260850.1|ENSEMBL:ENSG00000125861|entrezgene/locuslink:64096" +
+				"\treactome:R-HSA-434900|refseq:NP_071422.1|refseq:XP_005260850.1|refseq:NP_665705.1|ENSEMBL:ENSG00000125861|entrezgene/locuslink:64096" +
 				"\treactome:PSPN(name)|reactome:Persephin(name)|reactome:PSPN_HUMAN(name)" +
 				"\treactome:GFRA4(name)|reactome:GDNF family receptor alpha-4(name)|reactome:GFRA4_HUMAN(name)" +
 				"\tpsi-mi:\"MI:0364\"(inferred by curator)" +
@@ -63,7 +63,7 @@ public class PsiMiTabWriterTest {
 		final String expected = "" +
 				"uniprotkb:P52735" +
 				"\treactome:R-HSA-445010" +
-				"\treactome:R-HSA-442307|refseq:NP_001127870.1|refseq:NP_003362.2|refseq:XP_005272270.1|ENSEMBL:ENSG00000160293|entrezgene/locuslink:7410" +
+				"\treactome:R-HSA-442307|refseq:XP_005272270.1|refseq:NP_003362.2|refseq:NP_001127870.1|ENSEMBL:ENSG00000160293|entrezgene/locuslink:7410" +
 				"\t-" +
 				"\treactome:p-Y172-VAV2(name)|reactome:" +
 				"\"p-VAV2(Y172)\"(name)" +

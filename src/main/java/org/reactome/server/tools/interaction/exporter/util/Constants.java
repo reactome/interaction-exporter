@@ -1,6 +1,6 @@
 package org.reactome.server.tools.interaction.exporter.util;
 
-import org.reactome.server.graph.domain.model.Publication;
+import org.reactome.server.graph.domain.model.LiteratureReference;
 import org.reactome.server.tools.interaction.exporter.psi.SimpleConfidence;
 import org.reactome.server.tools.interaction.exporter.psi.SimpleCrossReference;
 import org.reactome.server.tools.interaction.exporter.psi.SimplePublication;
@@ -27,5 +27,5 @@ public class Constants {
 	public static final CrossReference COMPLEX = new SimpleCrossReference(PSI_MI, "MI:0314", "complex");
 	public static final CrossReference BIOPOLYMER = new SimpleCrossReference(PSI_MI, "MI:0383", "biopolymer");
 	public static final CrossReference UNKNOWN_PARTICIPANT = new SimpleCrossReference(PSI_MI, "MI:0329", "unknown participant");
-	public static final Publication REACTOME_PUBLICATION = new SimplePublication(24243840, "Fabregat", 2015);
+	public static final LiteratureReference REACTOME_PUBLICATION = new SimplePublication(24243840, "Fabregat", 2015);
 }

@@ -4,7 +4,6 @@ import org.reactome.server.graph.domain.model.*;
 import org.reactome.server.tools.interaction.exporter.Interaction;
 import org.reactome.server.tools.interaction.exporter.InteractionType;
 import org.reactome.server.tools.interaction.exporter.util.Constants;
-import org.reactome.server.tools.interaction.exporter.util.IdentifierResolver;
 import psidev.psi.mi.tab.model.*;
 
 import java.text.DateFormat;
@@ -22,59 +21,21 @@ public class InteractionFactory {
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
 
 	public static BinaryInteraction toBinaryInteraction(Interaction interaction) {
-		final Interactor a = createInteractor(interaction.getA());
-		final Interactor b = createInteractor(interaction.getB());
+		final Interactor a = InteractionFactoryFast.createInteractor(interaction.getA().getEntity().getStId());
+		a.setStoichiometry(Collections.singletonList(interaction.getA().getStoichiometry().intValue()));
+		a.setBiologicalRoles(Collections.singletonList(interaction.getA().getBiologicalRole()));
+		final Interactor b = InteractionFactoryFast.createInteractor(interaction.getB().getEntity().getStId());
+		b.setStoichiometry(Collections.singletonList(interaction.getB().getStoichiometry().intValue()));
+		b.setBiologicalRoles(Collections.singletonList(interaction.getB().getBiologicalRole()));
 		final BinaryInteraction psiInteraction = new BinaryInteractionImpl(a, b);
-		configure(psiInteraction, interaction);
+		InteractionFactoryFast.configureContext(psiInteraction, interaction.getContext().getStId());
+		psiInteraction.setInteractionTypes(Collections.singletonList(interaction.getType()));
 		// Sort by primary identifier
 		if (a.getIdentifiers().get(0).getIdentifier().compareTo(b.getIdentifiers().get(0).getIdentifier()) > 0)
 			psiInteraction.flip();
 		return psiInteraction;
 	}
 
-	private static Interactor createInteractor(org.reactome.server.tools.interaction.exporter.Interactor inter) {
-		final PhysicalEntity entity = inter.getEntity();
-		final Interactor interactor = new Interactor();
-		final List<CrossReference> identifiers = IdentifierResolver.getIdentifiers(entity);
-		final CrossReference primaryIdentifier = primaryIdentifier(entity, identifiers);
-		identifiers.remove(primaryIdentifier);
-		interactor.setIdentifiers(Collections.singletonList(primaryIdentifier));
-		interactor.setAlternativeIdentifiers(new LinkedList<>(identifiers));
-		interactor.setAliases(getAlias(entity));
-		interactor.setStoichiometry(Collections.singletonList(inter.getStoichiometry().intValue()));
-		interactor.setBiologicalRoles(Collections.singletonList(inter.getBiologicalRole()));
-		interactor.setExperimentalRoles(Collections.singletonList(Constants.UNSPECIFIED_ROLE));
-		interactor.setOrganism(getOrganism(entity));
-		interactor.setParticipantIdentificationMethods(Collections.singletonList(Constants.INFERRED_BY_CURATOR));
-		interactor.setInteractorTypes(Collections.singletonList(getInteractorType(entity)));
-		interactor.setXrefs(getXrefs(entity));
-		interactor.setFeatures(getFeatures(entity));
-//		interactor.setAnnotations();
-//		interactor.setChecksums();
-		return interactor;
-	}
-
-	private static CrossReference getInteractorType(PhysicalEntity entity) {
-		if (entity instanceof EntityWithAccessionedSequence)
-			switch (((EntityWithAccessionedSequence) entity).getReferenceType()) {
-				case "ReferenceGeneProduct":
-				case "ReferenceIsoform":
-					return Constants.PROTEIN;
-				case "ReferenceRNASequence":
-					return Constants.RNA;
-				case "ReferenceDNASequence":
-					return Constants.DNA;
-				default:
-					logger.warning("Unknown reference type " + ((EntityWithAccessionedSequence) entity).getReferenceType());
-			}
-		else if (entity instanceof Complex)
-			return Constants.COMPLEX;
-		else if (entity instanceof Polymer)
-			return Constants.BIOPOLYMER;
-		else if (entity instanceof SimpleEntity)
-			return Constants.SMALL_MOLECULE;
-		return Constants.UNKNOWN_PARTICIPANT;
-	}
 
 	private static Organism getOrganism(DatabaseObject entity) {
 		List<Taxon> taxons = new LinkedList<>();
@@ -90,41 +51,7 @@ public class InteractionFactory {
 		return new OrganismImpl(references);
 	}
 
-	private static List<Alias> getAlias(PhysicalEntity entity) {
-		if (entity.getName() != null)
-			return entity.getName().stream()
-					.filter(name -> !name.contains("\n") && !name.contains(":"))
-					.map(name -> new SimpleAlias(Constants.REACTOME, name, "name"))
-					.collect(Collectors.toList());
-		return Collections.emptyList();
-	}
 
-	private static CrossReference primaryIdentifier(PhysicalEntity entity, List<CrossReference> identifiers) {
-		if (entity instanceof EntityWithAccessionedSequence) {
-			// uniprot
-			final CrossReference uniprot = identifiers.stream()
-					.filter(reference -> reference.getDatabase() != null)
-					.filter(reference -> reference.getDatabase().equalsIgnoreCase("uniprotkb"))
-					.findFirst().orElse(null);
-			if (uniprot != null)
-				return uniprot;
-		} else if (entity instanceof SimpleEntity) {
-			// ChEBI
-			final CrossReference chebi = identifiers.stream()
-					.filter(reference -> reference.getDatabase() != null)
-					.filter(reference -> reference.getDatabase().equalsIgnoreCase("chebi"))
-					.findFirst().orElse(null);
-			if (chebi != null)
-				return chebi;
-		}
-		final CrossReference reactome = identifiers.stream()
-				.filter(reference -> reference.getDatabase() != null)
-				.filter(reference -> reference.getDatabase().equalsIgnoreCase("reactome"))
-				.findFirst().orElse(null);
-		if (reactome != null)
-			return reactome;
-		return identifiers.get(0);
-	}
 
 	private static List<CrossReference> getXrefs(DatabaseObject entity) {
 		// molecular function
@@ -150,20 +77,6 @@ public class InteractionFactory {
 		return references;
 	}
 
-	private static List<Feature> getFeatures(PhysicalEntity entity) {
-		final List<Feature> features = new LinkedList<>();
-		if (entity instanceof EntityWithAccessionedSequence) {
-			final List<AbstractModifiedResidue> hasModifiedResidue = ((EntityWithAccessionedSequence) entity).getHasModifiedResidue();
-			if (hasModifiedResidue != null) {
-				hasModifiedResidue.stream()
-						.filter(TranslationalModification.class::isInstance)
-						.map(TranslationalModification.class::cast)
-						.map(SimpleFeature::new)
-						.forEach(features::add);
-			}
-		}
-		return features;
-	}
 
 	private static void configure(BinaryInteraction psiInteraction, Interaction interaction) {
 		psiInteraction.setCreationDate(getDate(interaction.getContext().getCreated()));
@@ -174,7 +87,6 @@ public class InteractionFactory {
 		psiInteraction.setComplexExpansion(getComplexExpansion(interaction));
 		psiInteraction.setDetectionMethods(Collections.singletonList(Constants.INFERRED_BY_CURATOR));
 		psiInteraction.setSourceDatabases(Collections.singletonList(Constants.REACTOME_DATABASE));
-		psiInteraction.setInteractionTypes(Collections.singletonList(interaction.getType()));
 		psiInteraction.setConfidenceValues(getConfidence(interaction.getContext()));
 		psiInteraction.setInteractionAcs(Collections.singletonList(new SimpleCrossReference(Constants.REACTOME, interaction.getContext().getStId())));
 		psiInteraction.setXrefs(getXrefs(interaction.getContext()));

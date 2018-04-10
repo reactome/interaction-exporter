@@ -13,7 +13,6 @@ public class ProgressBar {
 	private long start;
 	private String message;
 	private double progress;
-	private boolean started = false;
 	private Timer timer;
 	private PrintStream printStream = System.out;
 
@@ -31,8 +30,7 @@ public class ProgressBar {
 	public synchronized void setProgress(double progress, String message) {
 		this.message = message;
 		this.progress = progress;
-		if (!started) {
-			started = true;
+		if (timer == null) {
 			timer = new Timer(true);
 			timer.schedule(new TimerTask() {
 				@Override
@@ -48,7 +46,7 @@ public class ProgressBar {
 		int completed = (int) (progress * chunks);
 		final long elapsed = (System.nanoTime() - start) / 1000000;
 		printProgress(progress, message, completed, elapsed);
-		if (progress >= 1) timer.cancel();
+		if (progress >= 1) clear();
 
 	}
 
@@ -66,12 +64,13 @@ public class ProgressBar {
 		printStream.flush();
 	}
 
-	public void restart() {
-		if (timer != null){
+	public void clear() {
+		if (timer != null) {
 			timer.cancel();
+			timer = null;
 			printProgress();
 			printStream.println();
 		}
-		started = false;
 	}
+
 }
