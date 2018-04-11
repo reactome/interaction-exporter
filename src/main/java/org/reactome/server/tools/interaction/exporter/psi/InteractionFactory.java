@@ -96,6 +96,8 @@ public class InteractionFactory {
 			taxons.add(((EntityWithAccessionedSequence) entity).getSpecies());
 		else if (entity instanceof ReactionLikeEvent)
 			taxons.addAll(((ReactionLikeEvent) entity).getSpecies());
+		else if (entity instanceof Polymer)
+			taxons.addAll(((Polymer) entity).getSpecies());
 		final List<CrossReference> references = taxons.stream()
 				.map(taxon -> new SimpleCrossReference(Constants.TAXID, taxon.getTaxId(), taxon.getName().get(0)))
 				.collect(Collectors.toList());
