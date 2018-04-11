@@ -169,6 +169,17 @@ class InteractionExplorer {
 			if (unit.getChildren().size() > maxUnitSize) return;
 			unit.getChildren()
 					.forEach((child, s) -> addInteraction(context, type, a, as, child, s * bs));
+		} else if (a instanceof Polymer) {
+			final Unit unit = new Unit(a, simpleEntityPolicy);
+			if (unit.getChildren().isEmpty() || unit.getChildren().size() > maxUnitSize)
+				return;
+			unit.getChildren()
+					.forEach((child, s) -> addInteraction(context, type, child, s * as, b, bs));
+		} else if (b instanceof Polymer) {
+			final Unit unit = new Unit(b, simpleEntityPolicy);
+			if (unit.getChildren().size() > maxUnitSize) return;
+			unit.getChildren()
+					.forEach((child, s) -> addInteraction(context, type, a, as, child, s * bs));
 		} else writeInteraction(type, context, a, as, b, bs);
 	}
 
