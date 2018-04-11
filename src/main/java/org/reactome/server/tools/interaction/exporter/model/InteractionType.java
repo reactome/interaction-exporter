@@ -2,7 +2,6 @@ package org.reactome.server.tools.interaction.exporter.model;
 
 import org.reactome.server.tools.interaction.exporter.psi.SimpleCrossReference;
 import org.reactome.server.tools.interaction.exporter.util.Constants;
-import org.reactome.server.tools.interaction.exporter.util.GoTree;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -76,14 +75,14 @@ public class InteractionType extends SimpleCrossReference {
 
 	}
 
-	static InteractionType fromGo(String go) {
+	public static InteractionType fromGo(String go) {
 		return types.stream()
 				.filter(type -> type.getGoId().contains(go))
 				.findFirst()
 				.orElse(DEFAULT_TYPE);
 	}
 
-	static InteractionType fromPsiMi(String psiId) {
+	public static InteractionType fromPsiMi(String psiId) {
 		return types.stream()
 				.filter(type -> type.getIdentifier().equals(psiId))
 				.findFirst()

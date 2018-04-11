@@ -189,6 +189,8 @@ public class InteractionFactory {
 		psiInteraction.setConfidenceValues(getConfidence(interaction.getContext()));
 		psiInteraction.setInteractionAcs(Collections.singletonList(new SimpleCrossReference(Constants.REACTOME, interaction.getContext().getStId())));
 		psiInteraction.setXrefs(getXrefs(interaction.getContext()));
+		psiInteraction.setInteractionTypes(Collections.singletonList(interaction.getType()));
+
 //		psiInteraction.setNegativeInteraction(false);
 //		psiInteraction.setChecksums();
 //		psiInteraction.setParameters();

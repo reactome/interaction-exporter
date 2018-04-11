@@ -1,4 +1,4 @@
-package org.reactome.server.tools.interaction.exporter.util;
+package org.reactome.server.tools.interaction.exporter.model;
 
 import java.io.BufferedReader;
 import java.io.IOException;

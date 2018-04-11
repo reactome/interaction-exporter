@@ -1,6 +1,6 @@
 package org.reactome.server.tools.interaction.exporter;
 
-import org.junit.jupiter.api.*;
+import org.junit.*;
 import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
 import org.reactome.server.tools.interaction.exporter.model.Interaction;
 import org.reactome.server.tools.interaction.exporter.model.InteractionType;
@@ -17,9 +17,9 @@ public class InteractionExporterTest {
 
 	private static final String HOMO_SAPIENS = "Homo sapiens";
 
-	@BeforeEach
+	@Before
 	public void setUp() {
-		Assumptions.assumeTrue(hasConnection());
+		Assume.assumeTrue(hasConnection());
 	}
 
 	@Test
@@ -140,7 +140,7 @@ public class InteractionExporterTest {
 				interactionExporter.setObject("R-HSA-5357900")
 						.setMaxUnitSize(4))
 				.collect(Collectors.toList());
-		Assertions.assertEquals(0, interactions.size());
+		Assert.assertEquals(0, interactions.size());
 	}
 
 	@Test
@@ -167,7 +167,7 @@ public class InteractionExporterTest {
 		assertEquals(expected, interactions);
 	}
 
-	@Disabled
+	@Ignore
 	void testReactionSameCatalystAndInput() {
 		// TODO: In this reaction the catalyst and the input is the same
 		// + Reaction:R-HSA-1222723(1)
@@ -279,22 +279,22 @@ public class InteractionExporterTest {
 	public void testEquals() {
 		final Interactor a = new Interactor(getById("R-HSA-2089965"), 0L, Constants.UNSPECIFIED_ROLE);
 		final Interactor b = new Interactor(getById("R-HSA-2089965"), 0L, Constants.UNSPECIFIED_ROLE);
-		Assertions.assertEquals(a, b);
+		Assert.assertEquals(a, b);
 		final Interactor c = new Interactor(getById("R-HSA-2089966"), 0L, Constants.UNSPECIFIED_ROLE);
 		final Interaction interaction1 = new Interaction(InteractionType.PHYSICAL, getById("R-HSA-2428940"), a, c);
 		final Interaction interaction2 = new Interaction(InteractionType.PHYSICAL, getById("R-HSA-2428940"), c, a);
-		Assertions.assertEquals(interaction1, interaction2);
+		Assert.assertEquals(interaction1, interaction2);
 	}
 
 	@Test
 	public void testHash() {
 		final Interactor a = new Interactor(getById("R-HSA-2089965"), 0L, Constants.UNSPECIFIED_ROLE);
 		final Interactor b = new Interactor(getById("R-HSA-2089965"), 0L, Constants.UNSPECIFIED_ROLE);
-		Assertions.assertEquals(a.hashCode(), b.hashCode());
+		Assert.assertEquals(a.hashCode(), b.hashCode());
 		final Interactor c = new Interactor(getById("R-HSA-2089966"), 0L, Constants.UNSPECIFIED_ROLE);
 		final Interaction interaction1 = new Interaction(InteractionType.PHYSICAL, getById("R-HSA-2428940"), a, c);
 		final Interaction interaction2 = new Interaction(InteractionType.PHYSICAL, getById("R-HSA-2428940"), c, a);
-		Assertions.assertEquals(interaction1.hashCode(), interaction2.hashCode());
+		Assert.assertEquals(interaction1.hashCode(), interaction2.hashCode());
 	}
 
 	private void assertEquals(List<Interaction> expected, List<Interaction> interactions) {
@@ -308,7 +308,7 @@ public class InteractionExporterTest {
 				message += "These interactions are expected\n" + a.stream().map(String::valueOf).collect(Collectors.joining("\n")) + "\n";
 			if (!b.isEmpty())
 				message += "These interactions are not expected\n" + b.stream().map(String::valueOf).collect(Collectors.joining("\n")) + "\n";
-			Assertions.fail(message);
+			Assert.fail(message);
 		}
 		if (expected.size() != interactions.size()) {
 			final Set<Interaction> uniques = new TreeSet<>();
@@ -318,7 +318,7 @@ public class InteractionExporterTest {
 							.collect(Collectors.toSet());
 			if (!duplicates.isEmpty()) {
 				final String message = "These interactions are duplicated\n" + duplicates.stream().map(String::valueOf).collect(Collectors.joining("\n")) + "\n";
-				Assertions.fail(message);
+				Assert.fail(message);
 			}
 		}
 	}

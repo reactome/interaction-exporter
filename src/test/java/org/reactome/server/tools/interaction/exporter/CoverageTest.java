@@ -1,11 +1,11 @@
 package org.reactome.server.tools.interaction.exporter;
 
-import org.junit.jupiter.api.Disabled;
+import org.junit.Ignore;
 import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
 
 public class CoverageTest {
 
-	@Disabled
+	@Ignore
 	public void coverageTest() {
 		InteractionExporter.stream(exporter -> exporter
 				.setVerbose(true)

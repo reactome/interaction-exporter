@@ -1,6 +1,6 @@
 package org.reactome.server.tools.interaction.exporter;
 
-import org.junit.jupiter.api.Assertions;
+import org.junit.Assert;
 import org.neo4j.ogm.drivers.http.request.HttpRequestException;
 import org.reactome.server.graph.domain.model.DatabaseObject;
 import org.reactome.server.graph.service.DatabaseObjectService;
@@ -41,18 +41,18 @@ public class TestUtils {
 			while ((expectedLine = expectedReader.readLine()) != null) {
 				resultLine = resultReader.readLine();
 				if (resultLine == null)
-					Assertions.fail("Expected more lines at " + n);
+					Assert.fail("Expected more lines at " + n);
 				if (!resultLine.equals(expectedLine)) {
 					final String message = String.format("At line %d%n - Expected:[%s]%n - Actual  :[%s]%n", n, expectedLine, resultLine);
-					Assertions.fail(message);
+					Assert.fail(message);
 				}
 				n += 1;
 			}
 			if (resultReader.readLine() != null)
-				Assertions.fail("No more lines expected at " + n);
+				Assert.fail("No more lines expected at " + n);
 		} catch (IOException e) {
 			e.printStackTrace();
-			Assertions.fail(e.getMessage());
+			Assert.fail(e.getMessage());
 		}
 	}
 
