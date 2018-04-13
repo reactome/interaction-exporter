@@ -3,12 +3,13 @@ package org.reactome.server.tools.interaction.exporter.util;
 import java.io.PrintStream;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
 public class ProgressBar {
 
-	private final static DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss");
+	private final static DateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH);
 	private final int chunks;
 	private long start;
 	private String message;
