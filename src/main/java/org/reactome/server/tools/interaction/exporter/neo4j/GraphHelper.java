@@ -52,8 +52,9 @@ public class GraphHelper {
 			"MATCH (context:DatabaseObject{stId:{stId}}) " +
 			" OPTIONAL MATCH (context)-[:species]->(species) " +
 			" WITH context, collect(species) AS species " +
-			" OPTIONAL MATCH (context)-[:literatureReference]-(publication:LiteratureReference) " +
-			" WITH context, species, collect(publication) AS publications " +
+			" OPTIONAL MATCH (context)-[:literatureReference]-(publication1:LiteratureReference) " +
+			" OPTIONAL MATCH (context)-[:output]-(:ReactionLikeEvent)-[:literatureReference]-(publication2:LiteratureReference) " +
+			" WITH context, species, collect(publication1) + collect(publication2) AS publications " +
 			" OPTIONAL MATCH (context)-[:compartment]->(compartment) " +
 			" WITH context, species, publications, collect(compartment) AS compartments " +
 			" OPTIONAL MATCH (context)-[:catalystActivity]->(ca)-[:activity]-(activity)" +
@@ -82,7 +83,7 @@ public class GraphHelper {
 
 	private static InteractorResult queryInteractor(Object stId) {
 		try {
-			return SERVICE.singletonCustomQuery(InteractorResult.class, INTERACTOR_QUERY, Collections.singletonMap("stId", stId));
+			return SERVICE.getCustomQueryResult(InteractorResult.class, INTERACTOR_QUERY, Collections.singletonMap("stId", stId));
 		} catch (CustomQueryException e) {
 
 			// TODO: 10/04/18 create exception Database
@@ -97,7 +98,7 @@ public class GraphHelper {
 
 	private static ContextResult queryContext(Object stableIdentifier) {
 		try {
-			return SERVICE.singletonCustomQuery(ContextResult.class, CONTEXT_QUERY, Collections.singletonMap("stId", stableIdentifier));
+			return SERVICE.getCustomQueryResult(ContextResult.class, CONTEXT_QUERY, Collections.singletonMap("stId", stableIdentifier));
 		} catch (CustomQueryException e) {
 			e.printStackTrace();
 		}
