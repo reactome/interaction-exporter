@@ -1,14 +1,17 @@
 package org.reactome.server.tools.interaction.exporter.writer;
 
-import org.reactome.server.graph.domain.model.*;
+import org.reactome.server.graph.domain.model.Complex;
+import org.reactome.server.graph.domain.model.DatabaseObject;
+import org.reactome.server.graph.domain.model.ReactionLikeEvent;
 import org.reactome.server.tools.interaction.exporter.model.Interaction;
-import org.reactome.server.tools.interaction.exporter.util.Constants;
-import org.reactome.server.tools.interaction.exporter.util.IdentifierResolver;
+import org.reactome.server.tools.interaction.exporter.neo4j.ContextResult;
+import org.reactome.server.tools.interaction.exporter.neo4j.GraphHelper;
+import org.reactome.server.tools.interaction.exporter.neo4j.InteractorResult;
+import org.reactome.server.tools.interaction.exporter.psi.InteractionFactory;
 import psidev.psi.mi.tab.model.CrossReference;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -37,10 +40,13 @@ public class TsvWriter implements InteractionWriter {
 	@Override
 	public void write(Interaction interaction) {
 		final String[] line = new String[COLUMNS.size()];
-		List<CrossReference> aIdentifiers = IdentifierResolver.getIdentifiers(interaction.getA().getEntity());
-		List<CrossReference> bIdentifiers = IdentifierResolver.getIdentifiers(interaction.getB().getEntity());
-		final CrossReference aPrimaryIdentifier = primaryIdentifier(interaction.getA().getEntity(), aIdentifiers);
-		final CrossReference bPrimaryIdentifier = primaryIdentifier(interaction.getB().getEntity(), bIdentifiers);
+		final InteractorResult a = GraphHelper.interactor(interaction.getA().getEntity().getStId());
+		final InteractorResult b = GraphHelper.interactor(interaction.getB().getEntity().getStId());
+		final ContextResult context = GraphHelper.context(interaction.getContext().getStId());
+		final List<CrossReference> aIdentifiers = a.getIdentifiers();
+		final List<CrossReference> bIdentifiers = b.getIdentifiers();
+		final CrossReference aPrimaryIdentifier = InteractionFactory.primaryIdentifier(interaction.getA().getEntity().getSchemaClass(), aIdentifiers);
+		final CrossReference bPrimaryIdentifier = InteractionFactory.primaryIdentifier(interaction.getB().getEntity().getSchemaClass(), bIdentifiers);
 		line[0] = toString(aPrimaryIdentifier);
 		line[1] = ensemblIdentifier(aIdentifiers);
 		line[2] = entrezGeneIdentifier(aIdentifiers);
@@ -49,7 +55,7 @@ public class TsvWriter implements InteractionWriter {
 		line[5] = entrezGeneIdentifier(bIdentifiers);
 		line[6] = type(interaction.getContext());
 		line[7] = "reactome:" + interaction.getContext().getStId();
-		line[8] = pubmeds(interaction.getContext());
+		line[8] = pubmeds(context.getPublications());
 		output.println(String.join(SEPARATOR, line));
 	}
 
@@ -66,26 +72,9 @@ public class TsvWriter implements InteractionWriter {
 		else return EMPTY;
 	}
 
-	@SuppressWarnings("Duplicates")
-	private String pubmeds(DatabaseObject context) {
-		final List<Publication> references = new ArrayList<>();
-		if (context instanceof PhysicalEntity) {
-			PhysicalEntity pe = (PhysicalEntity) context;
-			if (pe.getLiteratureReference() != null) references.addAll(pe.getLiteratureReference());
-			if (pe.getProducedByEvent() != null) {
-				pe.getProducedByEvent().forEach(e -> {
-					if (e.getLiteratureReference() != null) references.addAll(e.getLiteratureReference());
-				});
-			}
-		} else if (context instanceof ReactionLikeEvent) {
-			ReactionLikeEvent rle = (ReactionLikeEvent) context;
-			if (rle.getLiteratureReference() != null) references.addAll(rle.getLiteratureReference());
-		}
+	private String pubmeds(List<CrossReference> references) {
 		return references.stream()
-				.filter(LiteratureReference.class::isInstance)
-				.map(LiteratureReference.class::cast)
-				.map(LiteratureReference::getPubMedIdentifier)
-				.map(String::valueOf)
+				.map(CrossReference::getIdentifier)
 				.collect(Collectors.joining(SECONDARY_SEPARATOR));
 	}
 
@@ -105,33 +94,6 @@ public class TsvWriter implements InteractionWriter {
 				.map(this::toString)
 				.collect(Collectors.joining(SECONDARY_SEPARATOR));
 		return result.isEmpty() ? EMPTY : result;
-	}
-
-	private CrossReference primaryIdentifier(PhysicalEntity entity, List<CrossReference> identifiers) {
-		if (entity instanceof EntityWithAccessionedSequence) {
-			// uniprot
-			final CrossReference uniprot = identifiers.stream()
-					.filter(reference -> reference.getDatabase() != null)
-					.filter(reference -> reference.getDatabase().equalsIgnoreCase("uniprotkb"))
-					.findFirst().orElse(null);
-			if (uniprot != null)
-				return uniprot;
-		} else if (entity instanceof SimpleEntity) {
-			// ChEBI
-			final CrossReference chebi = identifiers.stream()
-					.filter(reference -> reference.getDatabase() != null)
-					.filter(reference -> reference.getDatabase().equalsIgnoreCase("chebi"))
-					.findFirst().orElse(null);
-			if (chebi != null)
-				return chebi;
-		}
-		final CrossReference reactome = identifiers.stream()
-				.filter(reference -> reference.getDatabase() != null)
-				.filter(reference -> reference.getDatabase().equals(Constants.REACTOME))
-				.findFirst().orElse(null);
-		if (reactome != null)
-			return reactome;
-		return identifiers.get(0);
 	}
 
 	private String toString(CrossReference reference) {
