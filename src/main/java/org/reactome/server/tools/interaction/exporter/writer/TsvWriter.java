@@ -8,6 +8,7 @@ import psidev.psi.mi.tab.model.CrossReference;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -65,14 +66,21 @@ public class TsvWriter implements InteractionWriter {
 		else return EMPTY;
 	}
 
+	@SuppressWarnings("Duplicates")
 	private String pubmeds(DatabaseObject context) {
-		List<Publication> references = null;
-		if (context instanceof PhysicalEntity)
-			references = ((PhysicalEntity) context).getLiteratureReference();
-		else if (context instanceof ReactionLikeEvent)
-			references = ((ReactionLikeEvent) context).getLiteratureReference();
-		if (references == null)
-			return EMPTY;
+		final List<Publication> references = new ArrayList<>();
+		if (context instanceof PhysicalEntity) {
+			PhysicalEntity pe = (PhysicalEntity) context;
+			if (pe.getLiteratureReference() != null) references.addAll(pe.getLiteratureReference());
+			if (pe.getProducedByEvent() != null) {
+				pe.getProducedByEvent().forEach(e -> {
+					if (e.getLiteratureReference() != null) references.addAll(e.getLiteratureReference());
+				});
+			}
+		} else if (context instanceof ReactionLikeEvent) {
+			ReactionLikeEvent rle = (ReactionLikeEvent) context;
+			if (rle.getLiteratureReference() != null) references.addAll(rle.getLiteratureReference());
+		}
 		return references.stream()
 				.filter(LiteratureReference.class::isInstance)
 				.map(LiteratureReference.class::cast)

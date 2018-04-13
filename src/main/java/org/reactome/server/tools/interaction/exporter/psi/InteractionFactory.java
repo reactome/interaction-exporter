@@ -10,10 +10,7 @@ import psidev.psi.mi.tab.model.*;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -229,14 +226,22 @@ public class InteractionFactory {
 				.collect(Collectors.toList());
 	}
 
+	@SuppressWarnings("Duplicates")
 	private static List<Publication> getReferences(DatabaseObject context) {
-		final List<Publication> references;
+		final List<Publication> references = new ArrayList<>();
 		if (context instanceof PhysicalEntity) {
-			references = ((PhysicalEntity) context).getLiteratureReference();
-		} else if (context instanceof ReactionLikeEvent)
-			references = ((ReactionLikeEvent) context).getLiteratureReference();
-		else references = Collections.emptyList();
-		return references == null ? Collections.singletonList(Constants.REACTOME_PUBLICATION) : references;
+			PhysicalEntity pe = (PhysicalEntity) context;
+			if (pe.getLiteratureReference() != null) references.addAll(pe.getLiteratureReference());
+			if (pe.getProducedByEvent() != null) {
+				pe.getProducedByEvent().forEach(e -> {
+					if(e.getLiteratureReference()!=null) references.addAll(e.getLiteratureReference());
+				});
+			}
+		} else if (context instanceof ReactionLikeEvent) {
+			ReactionLikeEvent rle = (ReactionLikeEvent) context;
+			if (rle.getLiteratureReference() != null) references.addAll(rle.getLiteratureReference());
+		}
+		return references.isEmpty() ? Collections.singletonList(Constants.REACTOME_PUBLICATION) : references;
 	}
 
 	private static List<Confidence> getConfidence(DatabaseObject context) {
