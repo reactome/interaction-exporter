@@ -147,39 +147,16 @@ class InteractionExplorer {
 	}
 
 	private void addInteraction(DatabaseObject context, InteractionType type, PhysicalEntity a, long as, PhysicalEntity b, long bs) {
-		if (a instanceof EntitySet) {
-			final Unit unit = new Unit(a, simpleEntityPolicy);
-			if (unit.getChildren().isEmpty() || unit.getChildren().size() > maxUnitSize)
-				return;
-			unit.getChildren()
-					.forEach((child, s) -> addInteraction(context, type, child, s * as, b, bs));
-		} else if (b instanceof EntitySet) {
-			final Unit unit = new Unit(b, simpleEntityPolicy);
-			if (unit.getChildren().isEmpty() || unit.getChildren().size() > maxUnitSize)
-				return;
-			unit.getChildren()
-					.forEach((child, s) -> addInteraction(context, type, a, as, child, s * bs));
-		} else if (a instanceof Complex) {
+		if (a instanceof EntitySet || a instanceof Complex || a instanceof Polymer) {
 			final Unit unit = new Unit(a, simpleEntityPolicy);
 			if (unit.getChildren().size() > maxUnitSize) return;
-			unit.getChildren()
-					.forEach((child, s) -> addInteraction(context, type, child, s * as, b, bs));
-		} else if (b instanceof Complex) {
+			unit.getChildren().forEach((child, s) ->
+					addInteraction(context, type, child, s * as, b, bs));
+		} else if (b instanceof EntitySet || b instanceof Complex || b instanceof Polymer) {
 			final Unit unit = new Unit(b, simpleEntityPolicy);
 			if (unit.getChildren().size() > maxUnitSize) return;
-			unit.getChildren()
-					.forEach((child, s) -> addInteraction(context, type, a, as, child, s * bs));
-		} else if (a instanceof Polymer) {
-			final Unit unit = new Unit(a, simpleEntityPolicy);
-			if (unit.getChildren().isEmpty() || unit.getChildren().size() > maxUnitSize)
-				return;
-			unit.getChildren()
-					.forEach((child, s) -> addInteraction(context, type, child, s * as, b, bs));
-		} else if (b instanceof Polymer) {
-			final Unit unit = new Unit(b, simpleEntityPolicy);
-			if (unit.getChildren().size() > maxUnitSize) return;
-			unit.getChildren()
-					.forEach((child, s) -> addInteraction(context, type, a, as, child, s * bs));
+			unit.getChildren().forEach((child, s) ->
+					addInteraction(context, type, a, as, child, s * bs));
 		} else writeInteraction(type, context, a, as, b, bs);
 	}
 

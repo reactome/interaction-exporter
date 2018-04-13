@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 @SuppressWarnings("unused")
 public class ContextResult {
 	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
-	public List<CrossReference> crossReferences = Collections.emptyList();
+	private List<CrossReference> crossReferences = Collections.emptyList();
 	private String schemaClass;
 	private Date created;
 	private Date modified;
