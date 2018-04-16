@@ -21,14 +21,6 @@ public class InteractorResult {
 	private List<Feature> features = Collections.emptyList();
 	private List<CrossReference> crossReferences = Collections.emptyList();
 
-	public void setSchemaClass(String schemaClass) {
-		this.schemaClass = schemaClass;
-	}
-
-	public void setReferenceType(String referenceType) {
-		this.referenceType = referenceType;
-	}
-
 	public void setIdentifiers(List<SimpleCrossReference> identifiers) {
 		this.identifiers = new LinkedList<>(identifiers);
 	}

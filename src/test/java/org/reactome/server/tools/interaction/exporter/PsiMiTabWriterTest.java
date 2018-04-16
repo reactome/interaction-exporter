@@ -30,7 +30,7 @@ public class PsiMiTabWriterTest {
 
 	@Test
 	public void testPhysicalInteraction() throws IOException {
-		final String expected = IOUtils.toString(PsiMiTabWriterTest.class.getResourceAsStream("testPhysicalInteraction.txt"), Charset.defaultCharset()).trim();
+		final String expected = IOUtils.toString(PsiMiTabWriterTest.class.getResourceAsStream("psi-testPhysicalInteraction.txt"), Charset.defaultCharset()).trim();
 		final Interaction interaction = new Interaction(InteractionType.PHYSICAL, getById("R-HSA-8853798"),
 				new Interactor(getById("R-HSA-434907"), 1L, Constants.UNSPECIFIED_ROLE),
 				new Interactor(getById("R-HSA-434900"), 1L, Constants.UNSPECIFIED_ROLE));
@@ -40,7 +40,7 @@ public class PsiMiTabWriterTest {
 
 	@Test
 	public void testEnzymaticReaction() throws IOException {
-		final String expected = IOUtils.toString(PsiMiTabWriterTest.class.getResourceAsStream("testEnzymaticReaction.txt"), Charset.defaultCharset()).trim();
+		final String expected = IOUtils.toString(PsiMiTabWriterTest.class.getResourceAsStream("psi-testEnzymaticReaction.txt"), Charset.defaultCharset()).trim();
 		final Interaction interaction = new Interaction(InteractionType.fromPsiMi("MI:0414"), getById("R-HSA-445064"),
 				new Interactor(getById("R-HSA-442307"), 1L, Constants.ENZYME_TARGET),
 				new Interactor(getById("R-HSA-445010"), 1L, Constants.ENZYME));
@@ -49,7 +49,7 @@ public class PsiMiTabWriterTest {
 
 	@Test
 	public void testCleavageInteraction() throws IOException {
-		final String expected = IOUtils.toString(PsiMiTabWriterTest.class.getResourceAsStream("testCleavageInteraction.txt"), Charset.defaultCharset()).trim();
+		final String expected = IOUtils.toString(PsiMiTabWriterTest.class.getResourceAsStream("psi-testCleavageInteraction.txt"), Charset.defaultCharset()).trim();
 		final Interaction interaction = new Interaction(InteractionType.fromPsiMi("MI:0194"), getById("R-HSA-5340274"),
 				new Interactor(getById("R-HSA-158770"), 1L, Constants.ENZYME),
 				new Interactor(getById("R-HSA-1602455"), 1L, Constants.ENZYME_TARGET));

@@ -26,12 +26,12 @@ public class TsvExporterTest {
 		InteractionExporter.stream(exporter -> exporter.setObject("R-HSA-5213466"))
 				.forEach(writer::write);
 		final InputStream result = new ByteArrayInputStream(outputStream.toByteArray());
-		final InputStream expected = TsvExporterTest.class.getResourceAsStream("tsv-result-1.txt");
+		final InputStream expected = TsvExporterTest.class.getResourceAsStream("tsv-testReaction.txt");
 		TestUtils.assertEquals(expected, result);
 	}
 
 	@Test
-	public void testAnotherReaction() {
+	public void testReaction2() {
 		// + Reaction:R-HSA-3301345
 		// |    c Complex:R-HSA-3318420
 		// |    |    + Complex:R-HSA-3318407
@@ -53,7 +53,7 @@ public class TsvExporterTest {
 				.setMaxUnitSize(40))
 				.forEach(writer::write);
 		final InputStream result = new ByteArrayInputStream(outputStream.toByteArray());
-		final InputStream expected = TsvExporterTest.class.getResourceAsStream("tsv-result-2.txt");
+		final InputStream expected = TsvExporterTest.class.getResourceAsStream("tsv-testReaction2.txt");
 		TestUtils.assertEquals(expected, result);
 	}
 }
