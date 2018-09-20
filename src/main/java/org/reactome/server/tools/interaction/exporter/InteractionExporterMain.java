@@ -7,6 +7,7 @@ import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
 import org.reactome.server.tools.interaction.exporter.model.Interaction;
 import org.reactome.server.tools.interaction.exporter.util.GraphCoreConfig;
+import org.reactome.server.tools.interaction.exporter.util.ProgressBar;
 import org.reactome.server.tools.interaction.exporter.writer.InteractionWriter;
 import org.reactome.server.tools.interaction.exporter.writer.Tab27Writer;
 import org.reactome.server.tools.interaction.exporter.writer.TsvWriter;
@@ -84,9 +85,9 @@ public class InteractionExporterMain {
 				tsvWriter.write(interaction);
 			});
 			final long end = System.nanoTime();
-			final long millis = (end - start) / 1000000;
+			final long millis = (end - start) / 1_000_000;
 			System.out.println();
-			System.out.println(DATE_FORMAT.format(millis));
+			System.out.println(ProgressBar.formatTime(millis));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
