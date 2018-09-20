@@ -4,6 +4,7 @@ import org.apache.commons.collections.map.LRUMap;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
 import java.util.Map;
@@ -86,9 +87,7 @@ public class GraphHelper {
 		try {
 			return SERVICE.getCustomQueryResult(InteractorResult.class, INTERACTOR_QUERY, Collections.singletonMap("stId", stId));
 		} catch (CustomQueryException e) {
-
-			// TODO: 10/04/18 create exception Database
-			e.printStackTrace();
+			LoggerFactory.getLogger("interaction-exporter").error("Query error for object " + stId, e);
 		}
 		return null;
 	}
@@ -97,11 +96,11 @@ public class GraphHelper {
 		return (ContextResult) CONTEXT_CACHE.computeIfAbsent(stId, GraphHelper::queryContext);
 	}
 
-	private static ContextResult queryContext(Object stableIdentifier) {
+	private static ContextResult queryContext(Object stId) {
 		try {
-			return SERVICE.getCustomQueryResult(ContextResult.class, CONTEXT_QUERY, Collections.singletonMap("stId", stableIdentifier));
+			return SERVICE.getCustomQueryResult(ContextResult.class, CONTEXT_QUERY, Collections.singletonMap("stId", stId));
 		} catch (CustomQueryException e) {
-			e.printStackTrace();
+			LoggerFactory.getLogger("interaction-exporter").error("Query error for object " + stId, e);
 		}
 		return null;
 	}
