@@ -22,7 +22,7 @@ class InteractionExplorer {
 	 * is necessary because a physical entity can be several times in a context
 	 * in different parts of the tree.
 	 */
-	private Collection<org.reactome.server.tools.interaction.exporter.model.Interaction> interactions;
+	private Collection<Interaction> interactions;
 
 	/**
 	 * Configures a collector with a specific behaviour. The collector can be
@@ -40,7 +40,7 @@ class InteractionExplorer {
 	 *
 	 * @see InteractionExporter
 	 */
-	Collection<org.reactome.server.tools.interaction.exporter.model.Interaction> explore(DatabaseObject object) {
+	Collection<Interaction> explore(DatabaseObject object) {
 		interactions = new HashSet<>();
 		if (object instanceof Polymer)
 			explorePolymer((Polymer) object);
@@ -167,12 +167,12 @@ class InteractionExplorer {
 				? Constants.UNSPECIFIED_ROLE : Constants.ENZYME;
 		final CrossReference bRole = type == InteractionType.PHYSICAL
 				? Constants.UNSPECIFIED_ROLE : Constants.ENZYME_TARGET;
-		collect(new org.reactome.server.tools.interaction.exporter.model.Interaction(type, context, new Interactor(A, Ast, aRole), new Interactor(B, Bst, bRole)));
+		collect(new Interaction(type, context, new Interactor(A, Ast, aRole), new Interactor(B, Bst, bRole)));
 	}
 
-	private void collect(org.reactome.server.tools.interaction.exporter.model.Interaction interaction) {
+	private void collect(Interaction interaction) {
 		// Is there a similar interaction with different stoichiometry?
-		final org.reactome.server.tools.interaction.exporter.model.Interaction other = interactions.stream()
+		final Interaction other = interactions.stream()
 				.filter(interaction::equalsIgnoreStoichiometry)
 				.findFirst().orElse(null);
 		if (other == null) interactions.add(interaction);
@@ -191,7 +191,7 @@ class InteractionExplorer {
 	 *     interactionB.a.stoichiometry + interactionB.b.stoichiometry)
 	 * </pre>.
 	 */
-	private org.reactome.server.tools.interaction.exporter.model.Interaction bestStoichiometry(org.reactome.server.tools.interaction.exporter.model.Interaction interactionA, Interaction interactionB) {
+	private Interaction bestStoichiometry(Interaction interactionA, Interaction interactionB) {
 		final long a = interactionA.getA().getStoichiometry() + interactionA.getB().getStoichiometry();
 		final long b = interactionB.getA().getStoichiometry() + interactionB.getB().getStoichiometry();
 		return a < b ? interactionA : interactionB;
