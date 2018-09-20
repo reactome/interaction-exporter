@@ -15,7 +15,8 @@ public class GraphHelper {
 			"MATCH (e:DatabaseObject{stId:{stId}}) " +
 			"OPTIONAL MATCH (e)-[:species]->(species) " +
 			"WITH e, collect(species) AS species " +
-			"OPTIONAL MATCH (e)-[:referenceEntity]->(re)-[:crossReference]->(recr) " +
+			"OPTIONAL MATCH (e)-[:referenceEntity]->(re)" +
+			"OPTIONAL MATCH (re)-[:crossReference]->(recr)" +
 			"WITH e, re, species, collect(recr) AS cr " +
 			"OPTIONAL MATCH (e)-[:crossReference]->(ecr) " +
 			"WITH e, re, species, cr + collect(ecr) AS cr " +
