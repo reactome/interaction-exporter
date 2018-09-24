@@ -44,7 +44,7 @@ public class GraphHelper {
 			"" +   // features (psi)
 			"    CASE WHEN psi IS NULL" +
 			"    THEN []" +
-			"    ELSE collect({featureType:psi.name[0], text:\"MOD:\" + psi.identifier,range:CASE WHEN mr.coordinate IS NULL THEN [] ELSE [mr.coordinate + \"-\" + mr.coordinate] END}) " +
+			"    ELSE collect({featureType:psi.name[0], text:\"MOD:\" + psi.identifier, range: CASE WHEN mr.coordinate IS NULL THEN [\"?-?\"] ELSE [mr.coordinate + \"-\" + mr.coordinate] END}) " +
 			"    END AS features, " +
 			"" +  // species
 			"    [sp IN species | {database:\"taxid\", identifier:sp.taxId, text:sp.name[0]}] AS species, " +
