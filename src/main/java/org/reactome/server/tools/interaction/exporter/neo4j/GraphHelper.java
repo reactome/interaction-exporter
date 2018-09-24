@@ -16,8 +16,8 @@ public class GraphHelper {
 			"MATCH (e:DatabaseObject{stId:{stId}}) " +
 			"OPTIONAL MATCH (e)-[:species]->(species) " +
 			"WITH e, collect(species) AS species " +
-			"OPTIONAL MATCH (e)-[:referenceEntity]->(re)" +
-			"OPTIONAL MATCH (re)-[:crossReference]->(recr)" +
+			"OPTIONAL MATCH (e)-[:referenceEntity]->(re) " +
+			"OPTIONAL MATCH (re)-[:crossReference]->(recr) " +
 			"WITH e, re, species, collect(recr) AS cr " +
 			"OPTIONAL MATCH (e)-[:crossReference]->(ecr) " +
 			"WITH e, re, species, cr + collect(ecr) AS cr " +
@@ -52,29 +52,29 @@ public class GraphHelper {
 			"    [c IN comp | {database:c.databaseName, identifier:c.accession, text:c.name}] AS crossReferences";
 	private static final String CONTEXT_QUERY = "" +
 			"MATCH (context:DatabaseObject{stId:{stId}}) " +
-			" OPTIONAL MATCH (context)-[:species]->(species) " +
-			" WITH context, collect(species) AS species " +
-			" OPTIONAL MATCH (context)-[:literatureReference]-(publication1:LiteratureReference) " +
-			" OPTIONAL MATCH (context)-[:output]-(:ReactionLikeEvent)-[:literatureReference]-(publication2:LiteratureReference) " +
-			" WITH context, species, collect(publication1) + collect(publication2) AS publications " +
-			" OPTIONAL MATCH (context)-[:compartment]->(compartment) " +
-			" WITH context, species, publications, collect(compartment) AS compartments " +
-			" OPTIONAL MATCH (context)-[:catalystActivity]->(ca)-[:activity]-(activity)" +
-			" OPTIONAL MATCH (context)<-[:inferredTo]-(inferred) " +
-			" OPTIONAL MATCH (context)<-[:created]-(created:InstanceEdit) " +
-			" OPTIONAL MATCH (context)<-[:modified]-(modified:InstanceEdit) " +
-			" RETURN created.dateTime AS created, modified.dateTime AS modified, " +
-			"    CASE WHEN species IS NULL" +
-			"        THEN []" +
-			"        ELSE [sp IN species | {database:\"taxid\", identifier:sp.taxId, text:sp.name[0]}]" +
-			"    END AS species," +
-			"    publications, context.schemaClass as schemaClass," +
-			"    inferred IS NOT NULL AS inferred," +
-			"    CASE WHEN ca IS NULL" +
-			"        THEN []" +
-			"        ELSE [{database:activity.databaseName, identifier:activity.accession, text:activity.name}]" +
-			"    END" +
-			"    + [c IN compartments | {database:c.databaseName, identifier:c.accession, text:c.name}] AS crossReferences";
+			"OPTIONAL MATCH (context)-[:species]->(species) " +
+			"WITH context, collect(species) AS species " +
+			"OPTIONAL MATCH (context)-[:literatureReference]-(publication1:LiteratureReference) " +
+			"OPTIONAL MATCH (context)-[:output]-(:ReactionLikeEvent)-[:literatureReference]-(publication2:LiteratureReference) " +
+			"WITH context, species, collect(publication1) + collect(publication2) AS publications " +
+			"OPTIONAL MATCH (context)-[:compartment]->(compartment) " +
+			"WITH context, species, publications, collect(compartment) AS compartments " +
+			"OPTIONAL MATCH (context)-[:catalystActivity]->(ca)-[:activity]-(activity)" +
+			"OPTIONAL MATCH (context)<-[:inferredTo]-(inferred) " +
+			"OPTIONAL MATCH (context)<-[:created]-(created:InstanceEdit) " +
+			"OPTIONAL MATCH (context)<-[:modified]-(modified:InstanceEdit) " +
+			"RETURN created.dateTime AS created, modified.dateTime AS modified, " +
+			"   CASE WHEN species IS NULL" +
+			"       THEN []" +
+			"       ELSE [sp IN species | {database:\"taxid\", identifier:sp.taxId, text:sp.name[0]}]" +
+			"   END AS species," +
+			"   publications, context.schemaClass as schemaClass," +
+			"   inferred IS NOT NULL AS inferred," +
+			"   CASE WHEN ca IS NULL" +
+			"       THEN []" +
+			"       ELSE [{database:activity.databaseName, identifier:activity.accession, text:activity.name}]" +
+			"   END" +
+			"   + [c IN compartments | {database:c.databaseName, identifier:c.accession, text:c.name}] AS crossReferences";
 	private static Map INTERACTOR_CACHE = new LRUMap(50);
 	private static Map CONTEXT_CACHE = new LRUMap(10);
 
