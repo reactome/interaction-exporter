@@ -53,7 +53,7 @@ public class TsvWriter implements InteractionWriter {
 		line[3] = toString(bPrimaryIdentifier);
 		line[4] = ensemblIdentifier(bIdentifiers);
 		line[5] = entrezGeneIdentifier(bIdentifiers);
-		line[6] = type(interaction.getContext());
+		line[6] = interaction.getType().getText();
 		line[7] = "reactome:" + interaction.getContext().getStId();
 		line[8] = pubmeds(context.getPublications());
 		output.println(String.join(SEPARATOR, line));
