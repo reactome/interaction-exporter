@@ -15,8 +15,6 @@ import static org.reactome.server.tools.interaction.exporter.TestUtils.hasConnec
 
 public class InteractionExporterTest {
 
-	private static final String HOMO_SAPIENS = "Homo sapiens";
-
 	@Before
 	public void setUp() {
 		Assume.assumeTrue(hasConnection());
@@ -25,8 +23,8 @@ public class InteractionExporterTest {
 	@Test
 	public void testPolymer() {
 		final String stId = "R-HSA-182548";
-		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
-				exporter.setObject(stId))
+		final List<Interaction> interactions =
+				InteractionExporter.streamObject(stId, SimpleEntityPolicy.NON_TRIVIAL, 4, false)
 				.collect(Collectors.toList());
 		final List<Interaction> expected = Collections.singletonList(
 				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-182548"),
@@ -38,11 +36,7 @@ public class InteractionExporterTest {
 	@Test
 	public void testOlygomer() {
 		final String stId = "R-HSA-110576";
-		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
-				exporter.setSpecies(HOMO_SAPIENS)
-						.setSimpleEntityPolicy(SimpleEntityPolicy.NON_TRIVIAL)
-						.setMaxUnitSize(4)
-						.setObject(stId))
+		final List<Interaction> interactions = InteractionExporter.streamObject(stId, SimpleEntityPolicy.NON_TRIVIAL, 4, false)
 				.collect(Collectors.toList());
 		final List<Interaction> expected = Collections.singletonList(
 				new Interaction(InteractionType.PHYSICAL, getById("R-HSA-110576"),
@@ -95,10 +89,7 @@ public class InteractionExporterTest {
 						new Interactor(getById("R-HSA-1983670"), 1L, Constants.UNSPECIFIED_ROLE),
 						new Interactor(getById("R-HSA-157239"), 1L, Constants.UNSPECIFIED_ROLE))
 		);
-		final List<Interaction> interactions = InteractionExporter.stream(interactionExporter ->
-				interactionExporter.setObject("R-HSA-1911487")
-						.setMaxUnitSize(5)
-						.setSpecies(HOMO_SAPIENS))
+		final List<Interaction> interactions = InteractionExporter.streamObject("R-HSA-1911487", SimpleEntityPolicy.NON_TRIVIAL, 4, false)
 				.collect(Collectors.toList());
 		assertEquals(expected, interactions);
 	}
@@ -123,10 +114,7 @@ public class InteractionExporterTest {
 		// |    |    |    o EWAS:R-HSA-2468309
 		// |    |    |    o ...
 		final List<Interaction> expected = Collections.emptyList();
-		final List<Interaction> interactions = InteractionExporter.stream(interactionExporter ->
-				interactionExporter.setObject("R-HSA-2564685")
-						.setMaxUnitSize(3)
-						.setSpecies(HOMO_SAPIENS))
+		final List<Interaction> interactions = InteractionExporter.streamObject("R-HSA-2564685", SimpleEntityPolicy.NON_TRIVIAL, 3, false)
 				.collect(Collectors.toList());
 		assertEquals(expected, interactions);
 	}
@@ -136,9 +124,7 @@ public class InteractionExporterTest {
 		// + CandidateSet:R-HSA-5357900
 		// |    o EWAS:R-HSA-50845
 		// |    o EWAS:R-HSA-50847
-		final List<Interaction> interactions = InteractionExporter.stream(interactionExporter ->
-				interactionExporter.setObject("R-HSA-5357900")
-						.setMaxUnitSize(4))
+		final List<Interaction> interactions = InteractionExporter.streamObject("R-HSA-5357900", SimpleEntityPolicy.NON_TRIVIAL, 4, false)
 				.collect(Collectors.toList());
 		Assert.assertEquals(0, interactions.size());
 	}
@@ -162,8 +148,7 @@ public class InteractionExporterTest {
 						new Interactor(getById("R-BAN-5205707"), 1L, Constants.UNSPECIFIED_ROLE),
 						new Interactor(getById("R-ALL-74112"), 2L, Constants.UNSPECIFIED_ROLE))
 		);
-		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
-				exporter.setObject("R-HSA-5210918")).collect(Collectors.toList());
+		final List<Interaction> interactions = InteractionExporter.streamObject("R-HSA-5210918").collect(Collectors.toList());
 		assertEquals(expected, interactions);
 	}
 
@@ -196,8 +181,7 @@ public class InteractionExporterTest {
 						new Interactor(getById("R-MTU-1222724"), 2L, Constants.UNSPECIFIED_ROLE),
 						new Interactor(getById("R-MTU-1222724"), 2L, Constants.UNSPECIFIED_ROLE))
 		);
-		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
-				exporter.setObject("R-HSA-1222723")).collect(Collectors.toList());
+		final List<Interaction> interactions = InteractionExporter.streamObject("R-HSA-1222723").collect(Collectors.toList());
 		assertEquals(expected, interactions);
 	}
 
@@ -234,8 +218,7 @@ public class InteractionExporterTest {
 						new Interactor(getById("R-HSA-450328"), 1L, Constants.ENZYME),
 						new Interactor(getById("R-HSA-5218872"), 1L, Constants.ENZYME_TARGET))
 		);
-		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
-				exporter.setObject("R-HSA-5213466")).collect(Collectors.toList());
+		final List<Interaction> interactions = InteractionExporter.streamObject("R-HSA-5213466").collect(Collectors.toList());
 		assertEquals(expected, interactions);
 	}
 
@@ -270,8 +253,7 @@ public class InteractionExporterTest {
 //						new Interactor(getById("R-HSA-391095"), 3L, Constants.UNSPECIFIED_ROLE),
 //						new Interactor(getById("R-HSA-391093"), 0L, Constants.UNSPECIFIED_ROLE))
 		);
-		final List<Interaction> interactions = InteractionExporter.stream(exporter ->
-				exporter.setObject("R-HSA-391092")).collect(Collectors.toList());
+		final List<Interaction> interactions = InteractionExporter.streamObject("R-HSA-391092").collect(Collectors.toList());
 		assertEquals(expected, interactions);
 	}
 

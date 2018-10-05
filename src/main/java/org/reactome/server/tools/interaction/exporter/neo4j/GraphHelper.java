@@ -83,29 +83,42 @@ public class GraphHelper {
 	private static Map CONTEXT_CACHE = new LRUMap(10);
 
 
-	public static InteractorResult interactor(String stId) {
-		return (InteractorResult) INTERACTOR_CACHE.computeIfAbsent(stId, GraphHelper::queryInteractor);
-	}
-
-	private static InteractorResult queryInteractor(Object stId) {
+	/**
+	 * Performs a query to the graph database to retrieve the information of an interactor.
+	 *
+	 * @param stId the interactor stId
+	 * @return an InteractorResult or null if the query failed
+	 */
+	public static InteractorResult queryInteractor(String stId) {
+		final Object result = INTERACTOR_CACHE.get(stId);
+		if (result != null) return (InteractorResult) result;
 		try {
-			return SERVICE.getCustomQueryResult(InteractorResult.class, INTERACTOR_QUERY, Collections.singletonMap("stId", stId));
+			final InteractorResult interactorResult = SERVICE.getCustomQueryResult(InteractorResult.class, INTERACTOR_QUERY, Collections.singletonMap("stId", stId));
+			INTERACTOR_CACHE.put(stId, interactorResult);
+			return interactorResult;
 		} catch (CustomQueryException e) {
 			LoggerFactory.getLogger("interaction-exporter").error("Query error for object " + stId, e);
 		}
 		return null;
 	}
 
-	public static ContextResult context(String stId) {
-		return (ContextResult) CONTEXT_CACHE.computeIfAbsent(stId, GraphHelper::queryContext);
-	}
-
-	private static ContextResult queryContext(Object stId) {
+	/**
+	 * Performs a query to the graph database to retrieve the information of a context.
+	 *
+	 * @param stId the context stable identifier
+	 * @return a ContextResult object or null if query failed
+	 */
+	public static ContextResult queryContext(String stId) {
+		final Object result = CONTEXT_CACHE.get(stId);
+		if (result != null) return (ContextResult) result;
 		try {
-			return SERVICE.getCustomQueryResult(ContextResult.class, CONTEXT_QUERY, Collections.singletonMap("stId", stId));
+			final ContextResult contextResult = SERVICE.getCustomQueryResult(ContextResult.class, CONTEXT_QUERY, Collections.singletonMap("stId", stId));
+			CONTEXT_CACHE.put(stId, contextResult);
+			return contextResult;
 		} catch (CustomQueryException e) {
 			LoggerFactory.getLogger("interaction-exporter").error("Query error for object " + stId, e);
 		}
 		return null;
 	}
+
 }

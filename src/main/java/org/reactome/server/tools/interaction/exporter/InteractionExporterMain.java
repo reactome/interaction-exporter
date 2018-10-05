@@ -5,7 +5,6 @@ import org.reactome.server.graph.domain.model.Species;
 import org.reactome.server.graph.service.SpeciesService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
-import org.reactome.server.tools.interaction.exporter.model.Interaction;
 import org.reactome.server.tools.interaction.exporter.util.GraphCoreConfig;
 import org.reactome.server.tools.interaction.exporter.util.ProgressBar;
 import org.reactome.server.tools.interaction.exporter.writer.InteractionWriter;
@@ -14,12 +13,9 @@ import org.reactome.server.tools.interaction.exporter.writer.TsvWriter;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class InteractionExporterMain {
 
@@ -33,7 +29,6 @@ public class InteractionExporterMain {
 	private static final String OUTPUT = "output";
 	private static final String OBJECT = "object";
 	private static final String VERBOSE = "verbose";
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("HH:mm:ss", Locale.ENGLISH);
 
 	public static void main(String[] args) throws JSAPException {
 		final Parameter[] parameters = {
@@ -76,14 +71,21 @@ public class InteractionExporterMain {
 		     InteractionWriter tsvWriter = new TsvWriter(new FileOutputStream(prefix + ".tab-delimited.txt"))) {
 			final long start = System.nanoTime();
 			final String[] objects = config.getStringArray(OBJECT);
-			final String[] species = config.getStringArray(SPECIES);
-			final Stream<Interaction> stream = objects == null || objects.length == 0
-					? streamSpecies(maxUnitSize, simpleEntityPolicy, verbose, species)
-					: streamObjects(maxUnitSize, simpleEntityPolicy, verbose, objects);
-			stream.forEach(interaction -> {
-				tabWriter.write(interaction);
-				tsvWriter.write(interaction);
-			});
+			if (objects != null && objects.length > 0) {
+				InteractionExporter.streamObjects(Arrays.asList(objects), simpleEntityPolicy, maxUnitSize, verbose)
+						.forEach(interaction -> {
+							tabWriter.write(interaction);
+							tsvWriter.write(interaction);
+						});
+			} else {
+				final String[] species = config.getStringArray(SPECIES);
+				final List<String> speciesNames = getSpeciesNames(species);
+				InteractionExporter.streamSpecies(speciesNames, simpleEntityPolicy, maxUnitSize, verbose)
+						.forEach(interaction -> {
+							tabWriter.write(interaction);
+							tsvWriter.write(interaction);
+						});
+			}
 			final long end = System.nanoTime();
 			final long millis = (end - start) / 1_000_000;
 			System.out.println();
@@ -91,28 +93,6 @@ public class InteractionExporterMain {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	private static Stream<Interaction> streamSpecies(int maxUnitSize, SimpleEntityPolicy simpleEntityPolicy, boolean verbose, String[] speciesArg) {
-		final SpeciesService speciesService = ReactomeGraphCore.getService(SpeciesService.class);
-		final List<Species> species;
-		if (speciesArg.length == 1 && speciesArg[0].equalsIgnoreCase("all"))
-			species = speciesService.getSpecies();
-		else species = Arrays.stream(speciesArg)
-				.map(speciesService::getSpecies)
-				.collect(Collectors.toList());
-		if (verbose)
-			System.out.println("species            = " + species.stream().map(Species::getDisplayName).collect(Collectors.joining(", ")));
-		return species.stream()
-				.map(Species::getDisplayName)
-				.peek(s -> {
-					if (verbose) System.out.printf("%n%s%n", s);
-				})
-				.flatMap(specie -> InteractionExporter.stream(exporter -> exporter
-						.setSpecies(specie)
-						.setVerbose(verbose)
-						.setMaxUnitSize(maxUnitSize)
-						.setSimpleEntityPolicy(simpleEntityPolicy)));
 	}
 
 	private static SimpleEntityPolicy getSimpleEntityPolicy(String policy) {
@@ -132,14 +112,25 @@ public class InteractionExporterMain {
 		return simpleEntityPolicy;
 	}
 
-	private static Stream<Interaction> streamObjects(int maxUnitSize, SimpleEntityPolicy simpleEntityPolicy, boolean verbose, String[] objects) {
-		if (verbose)
-			System.out.println("objects            = " + Arrays.toString(objects));
-		return Arrays.stream(objects).flatMap(object ->
-				InteractionExporter.stream(exporter -> exporter
-						.setObject(object)
-						.setVerbose(verbose)
-						.setMaxUnitSize(maxUnitSize)
-						.setSimpleEntityPolicy(simpleEntityPolicy)));
+	/**
+	 * If species is 'all', call the method {@link SpeciesService#getSpecies()}. Otherwise, call
+	 * {@link SpeciesService#getSpecies(Object)} with every value in speciesArg and keep a list of unique species names.
+	 *
+	 * @return a list with the species names in Reactome database corresponding to the species passed by argument
+	 */
+	private static List<String> getSpeciesNames(String[] speciesArg) {
+		final SpeciesService speciesService = ReactomeGraphCore.getService(SpeciesService.class);
+		final List<String> species = new ArrayList<>();
+		if (speciesArg.length == 1 && speciesArg[0].equalsIgnoreCase("all")) {
+			for (Species specy : speciesService.getSpecies()) {
+				species.add(specy.getDisplayName());
+			}
+		} else {
+			for (String name : speciesArg) {
+				species.add(speciesService.getSpecies(name).getDisplayName());
+			}
+		}
+		return species;
 	}
+
 }

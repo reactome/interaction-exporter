@@ -12,10 +12,7 @@ import psidev.psi.mi.tab.model.CrossReference;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
@@ -129,6 +126,6 @@ public class ContextResult {
 	}
 
 	public void setCrossReferences(List<SimpleCrossReference> crossReferences) {
-		this.crossReferences = new LinkedList<>(crossReferences);
+		this.crossReferences = new ArrayList<>(crossReferences);
 	}
 }
