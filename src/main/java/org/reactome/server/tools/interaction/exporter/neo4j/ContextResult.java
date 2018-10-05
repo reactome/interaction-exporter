@@ -4,6 +4,8 @@ import org.reactome.server.graph.domain.model.LiteratureReference;
 import org.reactome.server.tools.interaction.exporter.psi.SimpleAuthor;
 import org.reactome.server.tools.interaction.exporter.psi.SimpleCrossReference;
 import org.reactome.server.tools.interaction.exporter.util.Constants;
+import psidev.psi.mi.tab.model.Annotation;
+import psidev.psi.mi.tab.model.AnnotationImpl;
 import psidev.psi.mi.tab.model.Author;
 import psidev.psi.mi.tab.model.CrossReference;
 
@@ -26,6 +28,7 @@ public class ContextResult {
 	private Boolean inferred;
 	private List<LiteratureReference> publications = Collections.singletonList(Constants.REACTOME_PUBLICATION);
 	private List<CrossReference> species = Collections.emptyList();
+	private List<String> pathways;
 
 	public void setSchemaClass(String schemaClass) {
 		this.schemaClass = schemaClass;
@@ -71,6 +74,10 @@ public class ContextResult {
 
 	public void setSpecies(List<SimpleCrossReference> species) {
 		this.species = new LinkedList<>(species);
+	}
+
+	public List<Annotation> getPathwayAnnotations() {
+		return pathways.stream().map(stId -> new AnnotationImpl("pathway", stId)).collect(Collectors.toList());
 	}
 
 	public List<Author> getAuthors() {

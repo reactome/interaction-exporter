@@ -110,6 +110,7 @@ public class InteractionFactory {
 		psiInteraction.setInteractionAcs(Collections.singletonList(new SimpleCrossReference(Constants.REACTOME, stId)));
 		psiInteraction.setConfidenceValues(Collections.singletonList(getConfidence(result.getInferred())));
 		psiInteraction.setXrefs(result.getCrossReferences());
+		psiInteraction.setAnnotations(result.getPathwayAnnotations());
 	}
 
 	private static <T>  List<T> singletonOrNull(T object) {
