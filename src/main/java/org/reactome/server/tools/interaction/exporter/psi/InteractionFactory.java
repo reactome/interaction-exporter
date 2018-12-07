@@ -19,7 +19,7 @@ public class InteractionFactory {
 			"pdbe", "psi-mi", "pubmed", "reactome", "refseq", "uniprotkb");
 
 	public static Interactor createInteractor(org.reactome.server.tools.interaction.exporter.model.Interactor interactor) {
-		final InteractorResult result = GraphHelper.interactor(interactor.getEntity().getStId());
+		final InteractorResult result = GraphHelper.queryInteractor(interactor.getEntity().getStId());
 		if (result == null)
 			throw new NullPointerException("No database entry for " + interactor);
 		final Interactor psiInteractor = new Interactor();
@@ -98,7 +98,7 @@ public class InteractionFactory {
 	}
 
 	public static void configureContext(BinaryInteraction psiInteraction, String stId) {
-		final ContextResult result = GraphHelper.context(stId);
+		final ContextResult result = GraphHelper.queryContext(stId);
 		psiInteraction.setCreationDate(singletonOrNull(result.getCreated()));
 		psiInteraction.setUpdateDate(singletonOrNull(result.getModified()));
 		psiInteraction.setAuthors(result.getAuthors());
@@ -110,6 +110,7 @@ public class InteractionFactory {
 		psiInteraction.setInteractionAcs(Collections.singletonList(new SimpleCrossReference(Constants.REACTOME, stId)));
 		psiInteraction.setConfidenceValues(Collections.singletonList(getConfidence(result.getInferred())));
 		psiInteraction.setXrefs(result.getCrossReferences());
+		psiInteraction.setAnnotations(result.getPathwayAnnotations());
 	}
 
 	private static <T>  List<T> singletonOrNull(T object) {

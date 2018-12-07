@@ -40,9 +40,9 @@ public class TsvWriter implements InteractionWriter {
 	@Override
 	public void write(Interaction interaction) {
 		final String[] line = new String[COLUMNS.size()];
-		final InteractorResult a = GraphHelper.interactor(interaction.getA().getEntity().getStId());
-		final InteractorResult b = GraphHelper.interactor(interaction.getB().getEntity().getStId());
-		final ContextResult context = GraphHelper.context(interaction.getContext().getStId());
+		final InteractorResult a = GraphHelper.queryInteractor(interaction.getA().getEntity().getStId());
+		final InteractorResult b = GraphHelper.queryInteractor(interaction.getB().getEntity().getStId());
+		final ContextResult context = GraphHelper.queryContext(interaction.getContext().getStId());
 		final List<CrossReference> aIdentifiers = a.getIdentifiers();
 		final List<CrossReference> bIdentifiers = b.getIdentifiers();
 		final CrossReference aPrimaryIdentifier = InteractionFactory.primaryIdentifier(interaction.getA().getEntity().getSchemaClass(), aIdentifiers);

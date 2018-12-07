@@ -3,6 +3,7 @@ package org.reactome.server.tools.interaction.exporter;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.Test;
+import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
 import org.reactome.server.tools.interaction.exporter.writer.TsvWriter;
 
 import java.io.ByteArrayInputStream;
@@ -23,8 +24,7 @@ public class TsvExporterTest {
 	public void testReaction() {
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(2048);
 		final TsvWriter writer = new TsvWriter(outputStream);
-		InteractionExporter.stream(exporter -> exporter.setObject("R-HSA-5213466"))
-				.forEach(writer::write);
+		InteractionExporter.streamObject(("R-HSA-5213466")).forEach(writer::write);
 		final InputStream result = new ByteArrayInputStream(outputStream.toByteArray());
 		final InputStream expected = TsvExporterTest.class.getResourceAsStream("tsv-testReaction.txt");
 		TestUtils.assertEquals(expected, result);
@@ -48,9 +48,7 @@ public class TsvExporterTest {
 		// |    |    o CandidateSet:R-HSA-4657030
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(2048);
 		final TsvWriter writer = new TsvWriter(new PrintStream(outputStream));
-		InteractionExporter.stream(exporter -> exporter
-				.setObject("R-HSA-3301345")
-				.setMaxUnitSize(40))
+		InteractionExporter.streamObject(("R-HSA-3301345"), SimpleEntityPolicy.NON_TRIVIAL, 40, false)
 				.forEach(writer::write);
 		final InputStream result = new ByteArrayInputStream(outputStream.toByteArray());
 		final InputStream expected = TsvExporterTest.class.getResourceAsStream("tsv-testReaction2.txt");

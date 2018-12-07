@@ -52,18 +52,22 @@ public class GraphHelper {
 			"    [c IN comp | {database:c.databaseName, identifier:c.accession, text:c.name}] AS crossReferences";
 	private static final String CONTEXT_QUERY = "" +
 			"MATCH (context:DatabaseObject{stId:{stId}}) " +
+			"OPTIONAL MATCH (p1:Pathway)-[:hasEvent]->(context) WHERE (context:ReactionLikeEvent) " +
+			"OPTIONAL MATCH (p2:Pathway)-[:hasEvent]->(:ReactionLikeEvent)-[:input|output|catalystActivity|physicalEntity|regulatedBy|regulator|hasComponent|hasMember|repeatedUnit*]->(context) WHERE (context:PhysicalEntity) " +
+			"WITH context, COLLECT(DISTINCT p1.stId) + COLLECT(DISTINCT p2.stId) AS ps " +
 			"OPTIONAL MATCH (context)-[:species]->(species) " +
-			"WITH context, collect(species) AS species " +
+			"WITH context, ps, collect(species) AS species " +
 			"OPTIONAL MATCH (context)-[:literatureReference]-(publication1:LiteratureReference) " +
 			"OPTIONAL MATCH (context)-[:output]-(:ReactionLikeEvent)-[:literatureReference]-(publication2:LiteratureReference) " +
-			"WITH context, species, collect(publication1) + collect(publication2) AS publications " +
+			"WITH context, ps, species, collect(publication1) + collect(publication2) AS publications " +
 			"OPTIONAL MATCH (context)-[:compartment]->(compartment) " +
-			"WITH context, species, publications, collect(compartment) AS compartments " +
+			"WITH context, ps, species, publications, collect(compartment) AS compartments " +
 			"OPTIONAL MATCH (context)-[:catalystActivity]->(ca)-[:activity]-(activity)" +
 			"OPTIONAL MATCH (context)<-[:inferredTo]-(inferred) " +
 			"OPTIONAL MATCH (context)<-[:created]-(created:InstanceEdit) " +
 			"OPTIONAL MATCH (context)<-[:modified]-(modified:InstanceEdit) " +
 			"RETURN created.dateTime AS created, modified.dateTime AS modified, " +
+			"   ps AS pathways, " +
 			"   CASE WHEN species IS NULL" +
 			"       THEN []" +
 			"       ELSE [sp IN species | {database:\"taxid\", identifier:sp.taxId, text:sp.name[0]}]" +
@@ -79,29 +83,42 @@ public class GraphHelper {
 	private static Map CONTEXT_CACHE = new LRUMap(10);
 
 
-	public static InteractorResult interactor(String stId) {
-		return (InteractorResult) INTERACTOR_CACHE.computeIfAbsent(stId, GraphHelper::queryInteractor);
-	}
-
-	private static InteractorResult queryInteractor(Object stId) {
+	/**
+	 * Performs a query to the graph database to retrieve the information of an interactor.
+	 *
+	 * @param stId the interactor stId
+	 * @return an InteractorResult or null if the query failed
+	 */
+	public static InteractorResult queryInteractor(String stId) {
+		final Object result = INTERACTOR_CACHE.get(stId);
+		if (result != null) return (InteractorResult) result;
 		try {
-			return SERVICE.getCustomQueryResult(InteractorResult.class, INTERACTOR_QUERY, Collections.singletonMap("stId", stId));
+			final InteractorResult interactorResult = SERVICE.getCustomQueryResult(InteractorResult.class, INTERACTOR_QUERY, Collections.singletonMap("stId", stId));
+			INTERACTOR_CACHE.put(stId, interactorResult);
+			return interactorResult;
 		} catch (CustomQueryException e) {
 			LoggerFactory.getLogger("interaction-exporter").error("Query error for object " + stId, e);
 		}
 		return null;
 	}
 
-	public static ContextResult context(String stId) {
-		return (ContextResult) CONTEXT_CACHE.computeIfAbsent(stId, GraphHelper::queryContext);
-	}
-
-	private static ContextResult queryContext(Object stId) {
+	/**
+	 * Performs a query to the graph database to retrieve the information of a context.
+	 *
+	 * @param stId the context stable identifier
+	 * @return a ContextResult object or null if query failed
+	 */
+	public static ContextResult queryContext(String stId) {
+		final Object result = CONTEXT_CACHE.get(stId);
+		if (result != null) return (ContextResult) result;
 		try {
-			return SERVICE.getCustomQueryResult(ContextResult.class, CONTEXT_QUERY, Collections.singletonMap("stId", stId));
+			final ContextResult contextResult = SERVICE.getCustomQueryResult(ContextResult.class, CONTEXT_QUERY, Collections.singletonMap("stId", stId));
+			CONTEXT_CACHE.put(stId, contextResult);
+			return contextResult;
 		} catch (CustomQueryException e) {
 			LoggerFactory.getLogger("interaction-exporter").error("Query error for object " + stId, e);
 		}
 		return null;
 	}
+
 }

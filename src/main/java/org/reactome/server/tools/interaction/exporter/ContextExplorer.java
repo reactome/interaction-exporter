@@ -13,12 +13,12 @@ import java.util.*;
 /**
  * Collects interaction from contexts.
  */
-class InteractionExplorer {
+class ContextExplorer {
 
 	private final SimpleEntityPolicy simpleEntityPolicy;
 	private final int maxUnitSize;
 	/**
-	 * Make sure only one interaction is exporter between two elements. This set
+	 * Make sure only one interaction is exported between two elements. This set
 	 * is necessary because a physical entity can be several times in a context
 	 * in different parts of the tree.
 	 */
@@ -28,7 +28,7 @@ class InteractionExplorer {
 	 * Configures a collector with a specific behaviour. The collector can be
 	 * reused.
 	 */
-	InteractionExplorer(SimpleEntityPolicy simpleEntityPolicy, int maxUnitSize) {
+	ContextExplorer(SimpleEntityPolicy simpleEntityPolicy, int maxUnitSize) {
 		this.simpleEntityPolicy = simpleEntityPolicy;
 		this.maxUnitSize = maxUnitSize;
 	}
