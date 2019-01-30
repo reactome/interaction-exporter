@@ -26,29 +26,32 @@ public class GraphHelper {
 			"OPTIONAL MATCH (e)-[:hasModifiedResidue]-(mr)-[:psiMod]->(psi) " +
 			"RETURN e.schemaClass AS schemaClass, e.referenceType AS referenceType," +
 			"" + // Identifiers: (reactome:stId, re(db,id), cr(db,id), re.otherIdentifier, re.otherIdentifiers)
-			"    [{database:\"reactome\", identifier:e.stId}] " +
-			"    + CASE WHEN cr IS NULL" +
-			"    THEN []" +
-			"    ELSE [ref IN cr | {database:ref.databaseName, identifier:ref.identifier}] END " +
-			"    + CASE WHEN re IS NULL" +
-			"    THEN [] " +
-			"    ELSE [{database:re.databaseName, identifier:re.identifier}]" +
-			"        + CASE WHEN re.otherIdentifier IS NULL " +
-			"        THEN [] " +
-			"        ELSE [id IN re.otherIdentifier WHERE id STARTS WITH \"ENSG\" | {database:\"ENSEMBL\", identifier:id}]  " +
-			"            + [id IN re.otherIdentifier WHERE id STARTS WITH \"EntrezGene:\" | {database:\"entrezgene/locuslink\", identifier:split(id, \":\")[1]}]" +
-			"        END" +
+			"    [{database:\"reactome\", identifier:e.stId}] + " +
+			"    CASE " +
+			"	   WHEN cr IS NULL THEN []" +
+			"      ELSE [ref IN cr | {database:ref.databaseName, identifier:ref.identifier}] " +
+			"    END + " +
+			"    CASE " +
+			"      WHEN re IS NULL THEN [] " +
+			"      ELSE [{database:re.databaseName, identifier:re.identifier}] + " +
+			"           CASE WHEN re.otherIdentifier IS NULL THEN [] " +
+			"           ELSE [id IN re.otherIdentifier WHERE id STARTS WITH \"ENSG\" | {database:\"ENSEMBL\", identifier:id}] + [id IN re.otherIdentifier WHERE id STARTS WITH \"EntrezGene:\" | {database:\"entrezgene/locuslink\", identifier:split(id, \":\")[1]}]" +
+			"      END " +
 			"    END AS identifiers, " +
-			"" + // Alias (entity.name)
+			     // Alias (entity.name)
 			"    [name IN e.name WHERE NOT name CONTAINS \"\\n\" AND NOT name CONTAINS \":\" | {dbSource:\"reactome\", name:name, aliasType:\"name\"}] AS aliases, " +
-			"" +   // features (psi)
-			"    CASE WHEN psi IS NULL" +
-			"    THEN []" +
-			"    ELSE collect({featureType:psi.name[0], text:\"MOD:\" + psi.identifier, range: CASE WHEN mr.coordinate IS NULL THEN [\"?-?\"] ELSE [mr.coordinate + \"-\" + mr.coordinate] END}) " +
+			     // features (psi)
+			"    CASE " +
+			"      WHEN psi IS NULL THEN []" +
+			"      ELSE collect({featureType:psi.name[0], text:\"MOD:\" + psi.identifier, range: CASE WHEN mr.coordinate IS NULL THEN [\"?-?\"] ELSE [mr.coordinate + \"-\" + mr.coordinate] END}) " +
+			"    END + " +
+			"    CASE " +
+			"      WHEN e.startCoordinate IS NULL AND e.endCoordinate IS NULL " +
+			"      THEN [] ELSE [{featureType:\"sufficient to bind\", range: CASE WHEN e.startCoordinate IS NULL THEN \"?\" WHEN e.startCoordinate < 0 THEN \"n\" ELSE e.startCoordinate END + \"-\" + CASE WHEN e.endCoordinate IS NULL THEN \"?\" WHEN e.endCoordinate < 0 THEN \"c\" ELSE e.endCoordinate END}] " +
 			"    END AS features, " +
-			"" +  // species
+				 // species
 			"    [sp IN species | {database:\"taxid\", identifier:sp.taxId, text:sp.name[0]}] AS species, " +
-			"" + // crossReferences
+				 // crossReferences
 			"    [c IN comp | {database:c.databaseName, identifier:c.accession, text:c.name}] AS crossReferences";
 	private static final String CONTEXT_QUERY = "" +
 			"MATCH (context:DatabaseObject{stId:{stId}}) " +
