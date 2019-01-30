@@ -95,8 +95,7 @@ class ContextExplorer {
 	}
 
 	private void exploreCatalystInteractions(ReactionLikeEvent reaction, Unit unit) {
-		if (reaction.getCatalystActivity() == null || reaction.getCatalystActivity().size() > 1)
-			return;
+		if (reaction.getCatalystActivity().isEmpty() || reaction.getCatalystActivity().size() > 1) return;
 		final List<PhysicalEntity> macro = new LinkedList<>();
 		final List<PhysicalEntity> small = new LinkedList<>();
 		final List<PhysicalEntity> other = new LinkedList<>();
