@@ -1,6 +1,8 @@
 package org.reactome.server.tools.interaction.exporter.psi;
 
 
+import org.neo4j.driver.Value;
+
 import java.util.Map;
 import java.util.Objects;
 import java.util.TreeMap;
@@ -99,4 +101,7 @@ public class SimpleCrossReference implements psidev.psi.mi.tab.model.CrossRefere
 		return Objects.hash(database, identifier, text);
 	}
 
+	public static SimpleCrossReference build(Value v) {
+		return new SimpleCrossReference(v.get("database").asString(null), v.get("identifier").asString(null), v.get("text").asString(null));
+	}
 }

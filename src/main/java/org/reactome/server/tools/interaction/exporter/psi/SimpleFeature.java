@@ -15,6 +15,12 @@ public class SimpleFeature implements Feature {
 	public SimpleFeature() {
 	}
 
+	public SimpleFeature(String type, List<String> ranges, String text) {
+		this.type = type;
+		this.ranges = ranges;
+		this.text = text;
+	}
+
 	SimpleFeature(TranslationalModification residue) {
 		setFeatureType(residue.getPsiMod().getName().get(0));
 		setText("MOD:" + residue.getPsiMod().getIdentifier());
