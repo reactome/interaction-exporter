@@ -37,9 +37,9 @@ pipeline{
 					sh "mkdir -p ${env.OUTPUT_FOLDER}"
 					withCredentials([usernamePassword(credentialsId: 'neo4jUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
 						// Default behaviour is to run interactions on Human data
-						sh "java -Xmx${env.JAVA_MEM_MAX}m -jar target/interaction-exporter-jar-with-dependencies.jar --user $user --password $pass --output ./${env.OUTPUT_FOLDER}/reactome.homo_sapiens.interactions --verbose"
+						sh "java -Xmx${env.JAVA_MEM_MAX}m -jar target/interaction-exporter-exec.jar --user $user --password $pass --output ./${env.OUTPUT_FOLDER}/reactome.homo_sapiens.interactions --verbose"
 						// Specify to generate interactions data for all species
-						sh "java -Xmx${env.JAVA_MEM_MAX}m -jar target/interaction-exporter-jar-with-dependencies.jar --user $user --password $pass --output ./${env.OUTPUT_FOLDER}/reactome.all_species.interactions --species ALL --verbose"
+						sh "java -Xmx${env.JAVA_MEM_MAX}m -jar target/interaction-exporter-exec.jar --user $user --password $pass --output ./${env.OUTPUT_FOLDER}/reactome.all_species.interactions --species ALL --verbose"
 					}
 				}
 			}
