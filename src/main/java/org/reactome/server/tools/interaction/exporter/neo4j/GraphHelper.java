@@ -1,19 +1,25 @@
 package org.reactome.server.tools.interaction.exporter.neo4j;
 
-import org.apache.commons.collections.map.LRUMap;
+import org.apache.commons.collections4.map.LRUMap;
+import org.reactome.server.graph.domain.model.LiteratureReference;
 import org.reactome.server.graph.exception.CustomQueryException;
 import org.reactome.server.graph.service.AdvancedDatabaseObjectService;
+import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 public class GraphHelper {
 
 	private static final AdvancedDatabaseObjectService SERVICE = ReactomeGraphCore.getService(AdvancedDatabaseObjectService.class);
+	private static final DatabaseObjectService DBOSERVICE = ReactomeGraphCore.getService(DatabaseObjectService.class);
+
 	private static final String INTERACTOR_QUERY = "" +
-			"MATCH (e:DatabaseObject{stId:{stId}}) " +
+			"MATCH (e:DatabaseObject{stId:$stId}) " +
 			"OPTIONAL MATCH (e)-[:species]->(species) " +
 			"WITH e, collect(species) AS species " +
 			"OPTIONAL MATCH (e)-[:referenceEntity]->(re) " +
@@ -47,14 +53,14 @@ public class GraphHelper {
 			"    END + " +
 			"    CASE " +
 			"      WHEN e.startCoordinate IS NULL AND e.endCoordinate IS NULL " +
-			"      THEN [] ELSE [{featureType:\"sufficient to bind\", range: CASE WHEN e.startCoordinate IS NULL THEN \"?\" WHEN e.startCoordinate < 0 THEN \"n\" ELSE e.startCoordinate END + \"-\" + CASE WHEN e.endCoordinate IS NULL THEN \"?\" WHEN e.endCoordinate < 0 THEN \"c\" ELSE e.endCoordinate END}] " +
+			"      THEN [] ELSE [{featureType:\"sufficient to bind\", range: [CASE WHEN e.startCoordinate IS NULL THEN \"?\" WHEN e.startCoordinate < 0 THEN \"n\" ELSE e.startCoordinate END + \"-\" + CASE WHEN e.endCoordinate IS NULL THEN \"?\" WHEN e.endCoordinate < 0 THEN \"c\" ELSE e.endCoordinate END ] }] " +
 			"    END AS features, " +
 				 // species
 			"    [sp IN species | {database:\"taxid\", identifier:sp.taxId, text:sp.name[0]}] AS species, " +
 				 // crossReferences
 			"    [c IN comp | {database:c.databaseName, identifier:c.accession, text:c.name}] AS crossReferences";
 	private static final String CONTEXT_QUERY = "" +
-			"MATCH (context:DatabaseObject{stId:{stId}}) " +
+			"MATCH (context:DatabaseObject{stId:$stId}) " +
 			"OPTIONAL MATCH (p1:Pathway)-[:hasEvent]->(context) WHERE (context:ReactionLikeEvent) " +
 			"OPTIONAL MATCH (p2:Pathway)-[:hasEvent]->(:ReactionLikeEvent)-[:input|output|catalystActivity|physicalEntity|regulatedBy|regulator|hasComponent|hasMember|repeatedUnit*]->(context) WHERE (context:PhysicalEntity) " +
 			"WITH context, COLLECT(DISTINCT p1.stId) + COLLECT(DISTINCT p2.stId) AS ps " +
@@ -69,21 +75,26 @@ public class GraphHelper {
 			"OPTIONAL MATCH (context)<-[:inferredTo]-(inferred) " +
 			"OPTIONAL MATCH (context)<-[:created]-(created:InstanceEdit) " +
 			"OPTIONAL MATCH (context)<-[:modified]-(modified:InstanceEdit) " +
-			"RETURN created.dateTime AS created, modified.dateTime AS modified, " +
+			"RETURN DISTINCT created.dateTime AS created, modified.dateTime AS modified, " +
 			"   ps AS pathways, " +
 			"   CASE WHEN species IS NULL" +
 			"       THEN []" +
 			"       ELSE [sp IN species | {database:\"taxid\", identifier:sp.taxId, text:sp.name[0]}]" +
 			"   END AS species," +
-			"   publications, context.schemaClass as schemaClass," +
+			"   CASE WHEN publications IS NULL " +
+			"       THEN [] " +
+			"       ELSE [pb IN publications | pb.dbId] " +
+			"   END AS publications, " +
+			"   context.schemaClass as schemaClass," +
 			"   inferred IS NOT NULL AS inferred," +
 			"   CASE WHEN ca IS NULL" +
 			"       THEN []" +
 			"       ELSE [{database:activity.databaseName, identifier:activity.accession, text:activity.name}]" +
 			"   END" +
 			"   + [c IN compartments | {database:c.databaseName, identifier:c.accession, text:c.name}] AS crossReferences";
-	private static Map INTERACTOR_CACHE = new LRUMap(50);
-	private static Map CONTEXT_CACHE = new LRUMap(10);
+
+	private static Map<String, Object> INTERACTOR_CACHE = new LRUMap<>(50);
+	private static Map<String, Object> CONTEXT_CACHE = new LRUMap<>(10);
 
 
 	/**
@@ -116,6 +127,12 @@ public class GraphHelper {
 		if (result != null) return (ContextResult) result;
 		try {
 			final ContextResult contextResult = SERVICE.getCustomQueryResult(ContextResult.class, CONTEXT_QUERY, Collections.singletonMap("stId", stId));
+
+			// preparing publication to get authors
+			List<LiteratureReference> pubs = new ArrayList<>();
+			contextResult.getPublicationDbIds().forEach(dbId -> pubs.add(DBOSERVICE.findByIdNoRelations(dbId)));
+			contextResult.setPublications(pubs);
+
 			CONTEXT_CACHE.put(stId, contextResult);
 			return contextResult;
 		} catch (CustomQueryException e) {

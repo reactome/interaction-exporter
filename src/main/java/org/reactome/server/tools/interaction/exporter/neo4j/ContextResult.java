@@ -1,13 +1,13 @@
 package org.reactome.server.tools.interaction.exporter.neo4j;
 
+import org.neo4j.driver.Record;
+import org.neo4j.driver.Value;
 import org.reactome.server.graph.domain.model.LiteratureReference;
+import org.reactome.server.graph.domain.result.CustomQuery;
 import org.reactome.server.tools.interaction.exporter.psi.SimpleAuthor;
 import org.reactome.server.tools.interaction.exporter.psi.SimpleCrossReference;
 import org.reactome.server.tools.interaction.exporter.util.Constants;
-import psidev.psi.mi.tab.model.Annotation;
-import psidev.psi.mi.tab.model.AnnotationImpl;
-import psidev.psi.mi.tab.model.Author;
-import psidev.psi.mi.tab.model.CrossReference;
+import psidev.psi.mi.tab.model.*;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -16,15 +16,25 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @SuppressWarnings("unused")
-public class ContextResult {
-	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.S");
+public class ContextResult implements CustomQuery {
+	private static final DateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	private List<CrossReference> crossReferences = Collections.emptyList();
 	private String schemaClass;
 	private Date created;
 	private Date modified;
 	private Boolean inferred;
+	private List<Long> publicationDbIds;
 	private List<LiteratureReference> publications = Collections.singletonList(Constants.REACTOME_PUBLICATION);
 	private List<CrossReference> species = Collections.emptyList();
+
+	public List<String> getPathways() {
+		return pathways;
+	}
+
+	public void setPathways(List<String> pathways) {
+		this.pathways = pathways;
+	}
+
 	private List<String> pathways;
 
 	public void setSchemaClass(String schemaClass) {
@@ -36,6 +46,7 @@ public class ContextResult {
 	}
 
 	public void setCreated(String created) {
+		if (created == null) return;
 		try {
 			this.created = DATE_FORMAT.parse(created);
 		} catch (ParseException e) {
@@ -128,4 +139,27 @@ public class ContextResult {
 	public void setCrossReferences(List<SimpleCrossReference> crossReferences) {
 		this.crossReferences = new ArrayList<>(crossReferences);
 	}
+
+	public List<Long> getPublicationDbIds() {
+		return publicationDbIds;
+	}
+
+	public void setPublicationDbIds(List<Long> publicationDbIds) {
+		this.publicationDbIds = publicationDbIds;
+	}
+
+	@Override
+	public CustomQuery build(Record r) {
+		ContextResult cr = new ContextResult();
+		cr.setSchemaClass(r.get("schemaClass").asString(null));
+		cr.setCreated(r.get("created").asString(null));
+		cr.setModified(r.get("modified").asString(null));
+		cr.setInferred(r.get("inferred").asBoolean(false));
+		cr.setSpecies(r.get("species").asList(SimpleCrossReference::build));
+		cr.setPathways(r.get("pathways").asList(Value::asString));
+		cr.setCrossReferences(r.get("crossReferences").asList(SimpleCrossReference::build));
+		cr.setPublicationDbIds(r.get("publications").asList(Value::asLong));
+		return cr;
+	}
+
 }
