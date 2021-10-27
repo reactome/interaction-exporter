@@ -25,10 +25,10 @@ Use maven to create the executable
 ```
 mvn clean package -f pom.xml
 ```
-A target/interaction-exporter-with-dependencies.jar will be created.
+A target/interaction-exporter-exec.jar will be created.
 ## Usage
 ```
-java -jar interaction-exporter-wit-dependencies.jar [--help] 
+java -jar interaction-exporter-exec.jar [--help] 
 	(-h|--host) <host> (-b|--port) <port> (-u|--user) <user> (-p|--password) <password>
 	(-o|--output) <output>
 	[(-m|--maxUnitSize) <maxUnitSize>] 

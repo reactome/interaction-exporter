@@ -1,23 +1,20 @@
 package org.reactome.server.tools.interaction.exporter;
 
-import org.junit.Assume;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
 import org.reactome.server.tools.interaction.exporter.writer.TsvWriter;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
+import java.io.*;
 
 import static org.reactome.server.tools.interaction.exporter.TestUtils.hasConnection;
 
 public class TsvExporterTest {
 
-	@Before
+	@BeforeAll
 	public void setUp() {
-		Assume.assumeTrue(hasConnection());
+		Assumptions.assumeTrue(hasConnection());
 	}
 
 	@Test

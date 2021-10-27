@@ -5,7 +5,7 @@ import org.reactome.server.graph.domain.model.Species;
 import org.reactome.server.graph.service.SpeciesService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.interaction.exporter.filter.SimpleEntityPolicy;
-import org.reactome.server.tools.interaction.exporter.util.GraphCoreConfig;
+import org.reactome.server.tools.interaction.exporter.util.InteractionExporterNeo4jConfig;
 import org.reactome.server.tools.interaction.exporter.util.ProgressBar;
 import org.reactome.server.tools.interaction.exporter.writer.InteractionWriter;
 import org.reactome.server.tools.interaction.exporter.writer.Tab27Writer;
@@ -32,16 +32,15 @@ public class InteractionExporterMain {
 
 	public static void main(String[] args) throws JSAPException {
 		final Parameter[] parameters = {
-				new FlaggedOption(HOST,                     JSAP.STRING_PARSER,     "localhost",        JSAP.REQUIRED,      'h', HOST,                      "The neo4j host"),
-				new FlaggedOption(PORT,                     JSAP.STRING_PARSER,     "7474",             JSAP.REQUIRED,      'b', PORT,                      "The neo4j port"),
-				new FlaggedOption(USER,                     JSAP.STRING_PARSER,     "neo4j",            JSAP.REQUIRED,      'u', USER,                      "The neo4j user"),
-				new FlaggedOption(PASSWORD,                 JSAP.STRING_PARSER,     "neo4j",            JSAP.REQUIRED,      'p', PASSWORD,                  "The neo4j password"),
-				new FlaggedOption(MAX_UNIT_SIZE,            JSAP.INTEGER_PARSER,    "4",                JSAP.NOT_REQUIRED,  'm', MAX_UNIT_SIZE,             "The maximum size of complexes/sets from which interactions are considered significant."),
-				new FlaggedOption(SPECIES,                  JSAP.STRING_PARSER,     "Homo sapiens",     JSAP.NOT_REQUIRED,  's', SPECIES,                   "1 or more species from which the interactions will be fetched. ALL to export all of the species").setAllowMultipleDeclarations(true),
-				new FlaggedOption(OBJECT,                   JSAP.STRING_PARSER,     null,               JSAP.NOT_REQUIRED,  'O', OBJECT,                    "Export interactions under these objects, species will be ignored").setAllowMultipleDeclarations(true),
-				new FlaggedOption(SIMPLE_ENTITIES_POLICY,   JSAP.STRING_PARSER,     "NON_TRIVIAL",      JSAP.NOT_REQUIRED,  't', SIMPLE_ENTITIES_POLICY,    "Set if simple entities are exported as well: ALL, NONE or NON_TRIVIAL."),
-				new FlaggedOption(OUTPUT,                   JSAP.STRING_PARSER,     null,               JSAP.REQUIRED,      'o', OUTPUT,                    "Prefix of the output files"),
-				new QualifiedSwitch(VERBOSE,                JSAP.BOOLEAN_PARSER,    JSAP.NO_DEFAULT,    JSAP.NOT_REQUIRED,  'v', VERBOSE,                   "Requests verbose output")
+				new FlaggedOption(HOST,                     JSAP.STRING_PARSER,     "bolt://localhost:7687",    JSAP.REQUIRED,      'h', HOST,                      "The neo4j host"),
+				new FlaggedOption(USER,                     JSAP.STRING_PARSER,     "neo4j",            		JSAP.REQUIRED,      'u', USER,                      "The neo4j user"),
+				new FlaggedOption(PASSWORD,                 JSAP.STRING_PARSER,     "neo4j",            		JSAP.REQUIRED,      'p', PASSWORD,                  "The neo4j password"),
+				new FlaggedOption(MAX_UNIT_SIZE,            JSAP.INTEGER_PARSER,    "4",                		JSAP.NOT_REQUIRED,  'm', MAX_UNIT_SIZE,             "The maximum size of complexes/sets from which interactions are considered significant."),
+				new FlaggedOption(SPECIES,                  JSAP.STRING_PARSER,     "Homo sapiens",     		JSAP.NOT_REQUIRED,  's', SPECIES,                   "1 or more species from which the interactions will be fetched. ALL to export all of the species").setAllowMultipleDeclarations(true),
+				new FlaggedOption(OBJECT,                   JSAP.STRING_PARSER,     null,               		JSAP.NOT_REQUIRED,  'O', OBJECT,                    "Export interactions under these objects, species will be ignored").setAllowMultipleDeclarations(true),
+				new FlaggedOption(SIMPLE_ENTITIES_POLICY,   JSAP.STRING_PARSER,     "NON_TRIVIAL",      		JSAP.NOT_REQUIRED,  't', SIMPLE_ENTITIES_POLICY,    "Set if simple entities are exported as well: ALL, NONE or NON_TRIVIAL."),
+				new FlaggedOption(OUTPUT,                   JSAP.STRING_PARSER,     null,               		JSAP.REQUIRED,      'o', OUTPUT,                    "Prefix of the output files"),
+				new QualifiedSwitch(VERBOSE,                JSAP.BOOLEAN_PARSER,    JSAP.NO_DEFAULT,    			JSAP.NOT_REQUIRED,  'v', VERBOSE,                   "Requests verbose output")
 		};
 		final SimpleJSAP jsap = new SimpleJSAP("Reactome interaction exporter", "Exports molecular interactions inferred from Reactome content",
 				parameters);
@@ -61,11 +60,7 @@ public class InteractionExporterMain {
 			System.out.println("simpleEntityPolicy = " + simpleEntityPolicy);
 		}
 
-		ReactomeGraphCore.initialise(config.getString(HOST),
-				config.getString(PORT),
-				config.getString(USER),
-				config.getString(PASSWORD),
-				GraphCoreConfig.class);
+		ReactomeGraphCore.initialise(config.getString(HOST), config.getString(USER), config.getString(PASSWORD), InteractionExporterNeo4jConfig.class);
 
 		try (InteractionWriter tabWriter = new Tab27Writer(new FileOutputStream(prefix + ".psi-mitab.txt"));
 		     InteractionWriter tsvWriter = new TsvWriter(new FileOutputStream(prefix + ".tab-delimited.txt"))) {
