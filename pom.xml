@@ -17,9 +17,10 @@
         <jsap.version>2.1</jsap.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <junit-jupiter-api.version>5.7.2</junit-jupiter-api.version>
+        <log4j.version>2.17.1</log4j.version>
 
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
-        <spring.boot.version>2.5.3</spring.boot.version>
+        <spring.boot.version>2.6.2</spring.boot.version>
     </properties>
 
     <build>
@@ -59,6 +60,16 @@
             <groupId>org.reactome.server.graph</groupId>
             <artifactId>graph-core</artifactId>
             <version>${graph-core.version}</version>
+            <exclusions>
+                <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-to-slf4j</artifactId>
+                </exclusion>
+                <exclusion>
+                        <groupId>org.apache.logging.log4j</groupId>
+                        <artifactId>log4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.commons</groupId>
@@ -75,6 +86,16 @@
                     <artifactId>com.springsource.org.apache.commons.collections</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-to-slf4j</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
         </dependency>
         <dependency>
             <groupId>com.martiansoftware</groupId>
