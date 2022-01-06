@@ -13,7 +13,7 @@ import static org.reactome.server.tools.interaction.exporter.TestUtils.hasConnec
 public class TsvExporterTest {
 
 	@BeforeAll
-	public void setUp() {
+	public static void setUp() {
 		Assumptions.assumeTrue(hasConnection());
 	}
 
