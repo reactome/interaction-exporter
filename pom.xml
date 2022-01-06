@@ -19,6 +19,7 @@
         <junit-jupiter-api.version>5.7.2</junit-jupiter-api.version>
 
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
+        <maven.surefire.version>3.0.0-M5</maven.surefire.version>
         <spring.boot.version>2.5.3</spring.boot.version>
     </properties>
 
@@ -50,6 +51,22 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${maven.surefire.version}</version>
+                <configuration>
+                    <useSystemClassLoader>true</useSystemClassLoader>
+                    <forkMode>always</forkMode>
+                    <test>*Test.java</test>
+                    <!-- Configure the Neo4j database for testcase -->
+                    <systemPropertyVariables>
+                        <neo4j.uri>${neo4j.uri}</neo4j.uri>
+                        <neo4j.user>${neo4j.user}</neo4j.user>
+                        <neo4j.password>${neo4j.password}</neo4j.password>
+                    </systemPropertyVariables>
+                </configuration>
             </plugin>
         </plugins>
     </build>

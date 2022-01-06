@@ -20,7 +20,7 @@ public class TestUtils {
 	private static boolean connection;
 
 	static {
-		ReactomeGraphCore.initialise("bolt://localhost:7687", "neo4j", "neo4j", InteractionExporterNeo4jConfig.class);
+		ReactomeGraphCore.initialise(System.getProperty("neo4j.uri"), System.getProperty("neo4j.user"), System.getProperty("neo4j.password"), InteractionExporterNeo4jConfig.class);
 		object_service = ReactomeGraphCore.getService(DatabaseObjectService.class);
 		try {
 			object_service.findById("R-HSA-110576");
