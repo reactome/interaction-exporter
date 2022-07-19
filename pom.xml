@@ -12,15 +12,15 @@
         <main.class>org.reactome.server.tools.interaction.exporter.InteractionExporterMain</main.class>
         <jdk.version>11</jdk.version>
 
-        <graph-core.version>2.0.3</graph-core.version>
+        <graph-core.version>2.0.4</graph-core.version>
         <psimitab.version>1.8.6</psimitab.version>
         <jsap.version>2.1</jsap.version>
         <commons-collections4.version>4.4</commons-collections4.version>
-        <junit-jupiter-api.version>5.7.2</junit-jupiter-api.version>
+        <junit-jupiter-api.version>5.8.2</junit-jupiter-api.version>
 
         <maven-compiler-plugin.version>3.8.1</maven-compiler-plugin.version>
         <maven.surefire.version>3.0.0-M5</maven.surefire.version>
-        <spring.boot.version>2.6.6</spring.boot.version>
+        <spring.boot.version>2.7.1</spring.boot.version>
     </properties>
 
     <build>
