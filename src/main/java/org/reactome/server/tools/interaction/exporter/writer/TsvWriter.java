@@ -8,7 +8,9 @@ import org.reactome.server.tools.interaction.exporter.neo4j.ContextResult;
 import org.reactome.server.tools.interaction.exporter.neo4j.GraphHelper;
 import org.reactome.server.tools.interaction.exporter.neo4j.InteractorResult;
 import org.reactome.server.tools.interaction.exporter.psi.InteractionFactory;
-import psidev.psi.mi.tab.model.CrossReference;
+import psidev.psi.mi.jami.model.Xref;
+import psidev.psi.mi.jami.tab.extension.MitabXref;
+
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -43,10 +45,10 @@ public class TsvWriter implements InteractionWriter {
 		final InteractorResult a = GraphHelper.queryInteractor(interaction.getA().getEntity().getStId());
 		final InteractorResult b = GraphHelper.queryInteractor(interaction.getB().getEntity().getStId());
 		final ContextResult context = GraphHelper.queryContext(interaction.getContext().getStId());
-		final List<CrossReference> aIdentifiers = a.getIdentifiers();
-		final List<CrossReference> bIdentifiers = b.getIdentifiers();
-		final CrossReference aPrimaryIdentifier = InteractionFactory.primaryIdentifier(interaction.getA().getEntity().getSchemaClass(), aIdentifiers);
-		final CrossReference bPrimaryIdentifier = InteractionFactory.primaryIdentifier(interaction.getB().getEntity().getSchemaClass(), bIdentifiers);
+		final List<Xref> aIdentifiers = a.getIdentifiers();
+		final List<Xref> bIdentifiers = b.getIdentifiers();
+		final MitabXref aPrimaryIdentifier = InteractionFactory.primaryIdentifier(interaction.getA().getEntity().getSchemaClass(), aIdentifiers);
+		final MitabXref bPrimaryIdentifier = InteractionFactory.primaryIdentifier(interaction.getB().getEntity().getSchemaClass(), bIdentifiers);
 		line[0] = toString(aPrimaryIdentifier);
 		line[1] = ensemblIdentifier(aIdentifiers);
 		line[2] = entrezGeneIdentifier(aIdentifiers);
@@ -72,31 +74,31 @@ public class TsvWriter implements InteractionWriter {
 		else return EMPTY;
 	}
 
-	private String pubmeds(List<CrossReference> references) {
+	private String pubmeds(List<MitabXref> references) {
 		return references.stream()
-				.map(CrossReference::getIdentifier)
+				.map(MitabXref::getId)
 				.collect(Collectors.joining(SECONDARY_SEPARATOR));
 	}
 
-	private String entrezGeneIdentifier(List<CrossReference> identifiers) {
+	private String entrezGeneIdentifier(List<MitabXref> identifiers) {
 		final String result = identifiers.stream()
 				.filter(entityIdentifier -> entityIdentifier.getDatabase() != null)
-				.filter(entityIdentifier -> entityIdentifier.getDatabase().equalsIgnoreCase("entrezgene/locuslink"))
+				.filter(entityIdentifier -> entityIdentifier.getDatabase().getShortName().equalsIgnoreCase("entrezgene/locuslink"))
 				.map(this::toString)
 				.collect(Collectors.joining(SECONDARY_SEPARATOR));
 		return result.isEmpty() ? EMPTY : result;
 	}
 
-	private String ensemblIdentifier(List<CrossReference> identifiers) {
+	private String ensemblIdentifier(List<MitabXref> identifiers) {
 		final String result = identifiers.stream()
 				.filter(entityIdentifier -> entityIdentifier.getDatabase() != null)
-				.filter(entityIdentifier -> entityIdentifier.getDatabase().equalsIgnoreCase("ensembl"))
+				.filter(entityIdentifier -> entityIdentifier.getDatabase().getShortName().equalsIgnoreCase("ensembl"))
 				.map(this::toString)
 				.collect(Collectors.joining(SECONDARY_SEPARATOR));
 		return result.isEmpty() ? EMPTY : result;
 	}
 
-	private String toString(CrossReference reference) {
-		return (reference.getDatabase() == null ? "" : reference.getDatabase() + ":") + reference.getIdentifier();
+	private String toString(MitabXref reference) {
+		return (reference.getDatabase() == null ? "" : reference.getDatabase().getShortName() + ":") + reference.getId();
 	}
 }

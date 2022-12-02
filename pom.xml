@@ -83,15 +83,9 @@
             <version>${commons-collections4.version}</version>
         </dependency>
         <dependency>
-            <groupId>psidev.psi.mi</groupId>
-            <artifactId>psimitab</artifactId>
-            <version>${psimitab.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>com.springsource.org.apache.commons.collections</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>psidev.psi.mi.jami</groupId>
+            <artifactId>jami-mitab</artifactId>
+            <version>3.2.13</version>
         </dependency>
         <dependency>
             <groupId>com.martiansoftware</groupId>
@@ -120,9 +114,9 @@
         </repository>
 
         <repository>
-            <id>ebi-public</id>
-            <name>The EBI public repository</name>
-            <url>https://www.ebi.ac.uk/intact/maven/nexus/content/repositories/public/</url>
+            <id>ebi-repo</id>
+            <name>The EBI repository</name>
+            <url>https://www.ebi.ac.uk/Tools/maven/repos/content/groups/ebi-repo/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
