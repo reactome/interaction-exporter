@@ -62,7 +62,7 @@ public class GraphHelper {
 	private static final String CONTEXT_QUERY = "" +
 			"MATCH (context:DatabaseObject{stId:$stId}) " +
 			"OPTIONAL MATCH (p1:Pathway)-[:hasEvent]->(context) WHERE (context:ReactionLikeEvent) " +
-			"OPTIONAL MATCH (p2:Pathway)-[:hasEvent]->(:ReactionLikeEvent)-[:input|output|catalystActivity|physicalEntity|regulatedBy|regulator|hasComponent|hasMember|repeatedUnit*]->(context) WHERE (context:PhysicalEntity) " +
+			"OPTIONAL MATCH (p2:Pathway)-[:hasEvent]->(:ReactionLikeEvent)-[:input|output|catalystActivity|physicalEntity|regulatedBy|regulator|hasComponent|hasMember|repeatedUnit|proteinMarker|RNAMarker*]->(context) WHERE (context:PhysicalEntity) " +
 			"WITH context, COLLECT(DISTINCT p1.stId) + COLLECT(DISTINCT p2.stId) AS ps " +
 			"OPTIONAL MATCH (context)-[:species]->(species) " +
 			"WITH context, ps, collect(species) AS species " +
