@@ -12,7 +12,7 @@
         <main.class>org.reactome.server.tools.interaction.exporter.InteractionExporterMain</main.class>
         <jdk.version>11</jdk.version>
 
-        <graph-core.version>2.0.4</graph-core.version>
+        <graph-core.version>2.0.5</graph-core.version>
         <psimitab.version>1.8.6</psimitab.version>
         <jsap.version>2.1</jsap.version>
         <commons-collections4.version>4.4</commons-collections4.version>
