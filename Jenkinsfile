@@ -18,7 +18,7 @@ pipeline{
 		stage('Check DiagramConverter build succeeded'){
 			steps{
 				script{
-                    			utils.checkUpstreamBuildsSucceeded("File-Generation/job/DiagramConverter/")
+                    utils.checkUpstreamBuildsSucceeded("File-Generation/job/DiagramConverter/")
 				}
 			}
 		}
