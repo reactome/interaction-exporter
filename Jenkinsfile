@@ -27,6 +27,7 @@ pipeline{
 		}
 		stage('Setup: Pull and clean docker environment'){
 			steps{
+
 				sh "docker pull ${ECR_URL}:latest"
 				sh """\
 					if docker ps -a --format '{{.Names}}' | grep -Eq '${CONT_NAME}'; then
