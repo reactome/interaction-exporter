@@ -8,9 +8,9 @@ import org.reactome.server.tools.interaction.exporter.writer.TsvWriter;
 
 import java.io.*;
 
-import static org.reactome.server.tools.interaction.exporter.TestUtils.hasConnection;
+import static org.reactome.server.tools.interaction.exporter.BaseTest.hasConnection;
 
-public class TsvExporterTest {
+public class TsvExporterTest extends BaseTest {
 
 	@BeforeAll
 	public static void setUp() {
@@ -19,16 +19,20 @@ public class TsvExporterTest {
 
 	@Test
 	public void testReaction() {
+		//TODO Rely on fake nodes like graph-core test refactor to avoid moving results across releases
+
 		final ByteArrayOutputStream outputStream = new ByteArrayOutputStream(2048);
 		final TsvWriter writer = new TsvWriter(outputStream);
 		InteractionExporter.streamObject(("R-HSA-5213466")).forEach(writer::write);
 		final InputStream result = new ByteArrayInputStream(outputStream.toByteArray());
 		final InputStream expected = TsvExporterTest.class.getResourceAsStream("tsv-testReaction.txt");
-		TestUtils.assertEquals(expected, result);
+		BaseTest.assertEquals(expected, result);
 	}
 
 	@Test
-	public void testReaction2() {
+	public void testReaction2()  {
+		//TODO Rely on fake nodes like graph-core test refactor to avoid moving results across releases
+
 		// + Reaction:R-HSA-3301345
 		// |    c Complex:R-HSA-3318420
 		// |    |    + Complex:R-HSA-3318407
@@ -49,6 +53,6 @@ public class TsvExporterTest {
 				.forEach(writer::write);
 		final InputStream result = new ByteArrayInputStream(outputStream.toByteArray());
 		final InputStream expected = TsvExporterTest.class.getResourceAsStream("tsv-testReaction2.txt");
-		TestUtils.assertEquals(expected, result);
+		BaseTest.assertEquals(expected, result);
 	}
 }

@@ -10,10 +10,7 @@ import org.reactome.server.tools.interaction.exporter.util.Constants;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static org.reactome.server.tools.interaction.exporter.TestUtils.getById;
-import static org.reactome.server.tools.interaction.exporter.TestUtils.hasConnection;
-
-public class InteractionExporterTest {
+public class InteractionExporterTest extends BaseTest {
 
 	@BeforeAll
 	public static void setUp() {

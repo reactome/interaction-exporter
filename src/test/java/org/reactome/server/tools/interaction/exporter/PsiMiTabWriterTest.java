@@ -1,31 +1,20 @@
 package org.reactome.server.tools.interaction.exporter;
 
-import org.apache.commons.io.IOUtils;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.reactome.server.tools.interaction.exporter.model.Interaction;
-import org.reactome.server.tools.interaction.exporter.model.InteractionType;
-import org.reactome.server.tools.interaction.exporter.model.Interactor;
-import org.reactome.server.tools.interaction.exporter.util.Constants;
 import org.reactome.server.tools.interaction.exporter.writer.Tab27Writer;
 import psidev.psi.mi.tab.model.builder.MitabWriterUtils;
 import psidev.psi.mi.tab.model.builder.PsimiTabVersion;
 
-import java.io.IOException;
-import java.nio.charset.Charset;
-
-import static org.reactome.server.tools.interaction.exporter.TestUtils.getById;
-
 /**
  * Tests to check that proper PSI-MITAB interactions are created.
  */
-public class PsiMiTabWriterTest {
+public class PsiMiTabWriterTest extends BaseTest {
 
 	@BeforeAll
 	public static void setUp() {
-		Assumptions.assumeTrue(TestUtils.hasConnection());
+		Assumptions.assumeTrue(BaseTest.hasConnection());
 	}
 
 //	@Test
