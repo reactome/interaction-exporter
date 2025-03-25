@@ -1,10 +1,17 @@
 package org.reactome.server.tools.interaction.exporter;
 
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.reactome.server.graph.domain.model.DatabaseObject;
 import org.reactome.server.graph.service.DatabaseObjectService;
 import org.reactome.server.graph.utils.ReactomeGraphCore;
 import org.reactome.server.tools.interaction.exporter.util.InteractionExporterNeo4jConfig;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,14 +20,25 @@ import java.io.InputStreamReader;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class TestUtils {
+@SpringBootTest
+@ContextConfiguration(classes = {InteractionExporterNeo4jConfig.class})
+@ExtendWith(SpringExtension.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
+public class BaseTest {
 
-	private static final DatabaseObjectService object_service;
-	private static final Map<String, ? extends DatabaseObject> cache = new LinkedHashMap<>();
+	private static DatabaseObjectService object_service;
+	private static Map<String, ? extends DatabaseObject> cache = new LinkedHashMap<>();
 	private static boolean connection;
 
-	static {
-		ReactomeGraphCore.initialise(System.getProperty("neo4j.uri"), System.getProperty("neo4j.user"), System.getProperty("neo4j.password"), InteractionExporterNeo4jConfig.class);
+
+	@BeforeAll
+	public static void initGraph(
+			@Value("${spring.neo4j.uri}") String neo4jURI,
+			@Value("${spring.neo4j.authentication.username}") String neo4jUser,
+			@Value("${spring.neo4j.authentication.password}") String neo4jPassword,
+			@Value("${spring.data.neo4j.database}") String database
+	) {
+		ReactomeGraphCore.initialise(neo4jURI, neo4jUser, neo4jPassword, database, InteractionExporterNeo4jConfig.class);
 		object_service = ReactomeGraphCore.getService(DatabaseObjectService.class);
 		try {
 			object_service.findById("R-HSA-110576");
@@ -29,6 +47,22 @@ public class TestUtils {
 			connection = false;
 		}
 	}
+
+//	static {
+////		ReactomeGraphCore.initialise(
+////				neo4jURI,
+////				neo4jUser,
+////				neo4jPassword,
+////				database,
+////				InteractionExporterNeo4jConfig.class);
+//		object_service = ReactomeGraphCore.getService(DatabaseObjectService.class);
+//		try {
+//			object_service.findById("R-HSA-110576");
+//			connection = true;
+//		} catch (Exception e) {
+//			connection = false;
+//		}
+//	}
 
 	static void assertEquals(InputStream expected, InputStream result) {
 		try {
