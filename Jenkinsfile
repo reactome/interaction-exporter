@@ -46,12 +46,12 @@ pipeline{
 					withCredentials([usernamePassword(credentialsId: 'neo4jUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
 						// Default behaviour is to run interactions on Human data
 						sh """\
-							docker run -v \$(pwd)/logs:${CONT_ROOT}/logs -v \$(pwd)/${env.OUTPUT_FOLDER}:${CONT_ROOT}/${env.OUTPUT_FOLDER} --net=host --name ${CONT_NAME} ${ECR_URL}:latest /bin/bash -c 'java -Xmx${env.JAVA_MEM_MAX}m -jar target/interaction-exporter-jar-with-dependencies.jar --user $user --password $pass --output ./${env.OUTPUT_FOLDER}/reactome.homo_sapiens.interactions --verbose'
+							docker run -v \$(pwd)/logs:${CONT_ROOT}/logs -v \$(pwd)/${env.OUTPUT_FOLDER}:${CONT_ROOT}/${env.OUTPUT_FOLDER} --net=host --name ${CONT_NAME} ${ECR_URL}:latest /bin/bash -c 'java -Xmx${env.JAVA_MEM_MAX}m -jar target/interaction-exporter-exec.jar --user $user --password $pass --output ./${env.OUTPUT_FOLDER}/reactome.homo_sapiens.interactions --verbose'
 						"""
 
 						// Specify to generate interactions data for all species
 						sh """\
-							docker run -v \$(pwd)/logs:${CONT_ROOT}/logs -v \$(pwd)/${env.OUTPUT_FOLDER}:${CONT_ROOT}/${env.OUTPUT_FOLDER} --net=host --name ${CONT_NAME} ${ECR_URL}:latest /bin/bash -c 'java -Xmx${env.JAVA_MEM_MAX}m -jar target/interaction-exporter-jar-with-dependencies.jar --user $user --password $pass --output ./${env.OUTPUT_FOLDER}/reactome.all_species.interactions --species ALL --verbose'
+							docker run -v \$(pwd)/logs:${CONT_ROOT}/logs -v \$(pwd)/${env.OUTPUT_FOLDER}:${CONT_ROOT}/${env.OUTPUT_FOLDER} --net=host --name ${CONT_NAME} ${ECR_URL}:latest /bin/bash -c 'java -Xmx${env.JAVA_MEM_MAX}m -jar target/interaction-exporter-exec.jar --user $user --password $pass --output ./${env.OUTPUT_FOLDER}/reactome.all_species.interactions --species ALL --verbose'
 						"""
 					}
 				}
