@@ -2,11 +2,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 		xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-	<modelVersion>4.0.0</modelVersion>
-
-    <groupId>org.reactome.server.tools</groupId>
-    <artifactId>interaction-exporter</artifactId>
-    <version>2.0.7</version>
+    <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.reactome.maven</groupId>
@@ -14,40 +10,104 @@
         <version>1.0.5</version>
     </parent>
 
-	<properties>
-		<main.class>org.reactome.server.tools.interaction.exporter.InteractionExporterMain</main.class>
-	</properties>
+    <groupId>org.reactome.server.tools</groupId>
+    <artifactId>interaction-exporter</artifactId>
+    <version>2.0.7</version>
 
-    <dependencies>
-        <dependency>
-            <groupId>org.reactome.server.graph</groupId>
-            <artifactId>graph-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-collections4</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>psidev.psi.mi</groupId>
-            <artifactId>psimitab</artifactId>
-            <version>1.10.2</version>
-        </dependency>
-        <dependency>
-            <groupId>com.martiansoftware</groupId>
-            <artifactId>jsap</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-<!--            <version>${junit-jupiter-api.version}</version>-->
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
+    <name>Inteaction Exporter</name>
+    <description>This project infers interactions between molecules from reactome.org database</description>
+    <url>https://github.com/reactome/interaction-exporter</url>
+    <organization>
+        <name>Reactome</name>
+        <url>https://reactome.org/</url>
+    </organization>
+    <licenses>
+       <license>
+           <name>The Apache License, Version 2.0</name>
+           <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+       </license>
+    </licenses>
+
+    <developers>
+        <developer>
+            <id>EliotRagueneau</id>
+            <name>Eliot Ragueneau</name>
+            <email>eragueneau@ebi.ac.uk</email>
+            <organization>European Bioinformatics Institute</organization>
+            <organizationUrl>https://www.ebi.ac.uk/</organizationUrl>
+        </developer>
+
+        <developer>
+            <id>cqgong</id>
+            <name>Chuqiao Gong</name>
+            <email>cgong@ebi.ac.uk</email>
+            <organization>European Bioinformatics Institute</organization>
+            <organizationUrl>https://www.ebi.ac.uk/</organizationUrl>
+        </developer>
+
+        <developer>
+            <id>pasculorente</id>
+            <name>Pascual Lorente</name>
+            <roles>
+                <role>alumni</role>
+            </roles>
+            <organization>European Bioinformatics Institute</organization>
+            <organizationUrl>https://www.ebi.ac.uk/</organizationUrl>
+        </developer>
+
+        <developer>
+            <id>gviteri</id>
+            <name>Guilherme Viteri</name>
+            <roles>
+                <role>alumni</role>
+            </roles>
+            <organization>European Bioinformatics Institute</organization>
+            <organizationUrl>https://www.ebi.ac.uk/</organizationUrl>
+        </developer>
+
+        <developer>
+            <id>amundo</id>
+            <name>Antonio Fabregat</name>
+            <roles>
+                <role>alumni</role>
+            </roles>
+            <organization>European Bioinformatics Institute</organization>
+            <organizationUrl>https://www.ebi.ac.uk/</organizationUrl>
+        </developer>
+    </developers>
+
+    <scm>
+        <connection>scm:git:git://github.com/reactome/interaction-exporter.git</connection>
+        <developerConnection>scm:git:ssh://github.com:reactome/interaction-exporter.git</developerConnection>
+        <url>https://github.com/reactome/interaction-exporter/tree/master</url>
+    </scm>
+    <!-- Configures the distribution to nexus repository -->
+    <distributionManagement>
+        <!-- Sonatype Release repo -->
+        <repository>
+            <id>ossrh</id>
+            <name>Sonatype Release Repository</name>
+            <url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+
+        <!-- Sonatype SNAPSHOT repo -->
+        <snapshotRepository>
+            <id>ossrh</id>
+            <name>Sonatype Snapshot Repository</name>
+            <url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <properties>
+        <main.class>org.reactome.server.tools.interaction.exporter.InteractionExporterMain</main.class>
+
+        <maven.gpg.version>1.5</maven.gpg.version>
+        <maven.jar.version>2.6</maven.jar.version>
+        <maven.javadoc.version>2.10.3</maven.javadoc.version>
+        <maven.release.version>2.5.3</maven.release.version>
+        <maven.resources.version>3.0.1</maven.resources.version>
+        <nexus-staging-maven-plugin>1.6.7</nexus-staging-maven-plugin>
+    </properties>
 
     <repositories>
         <repository>
@@ -86,6 +146,37 @@
             </snapshots>
         </repository>
     </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.reactome.server.graph</groupId>
+            <artifactId>graph-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-collections4</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>psidev.psi.mi</groupId>
+            <artifactId>psimitab</artifactId>
+            <version>1.10.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.martiansoftware</groupId>
+            <artifactId>jsap</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+    <!--            <version>${junit-jupiter-api.version}</version>-->
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
     <build>
         <finalName>interaction-exporter</finalName>
@@ -167,7 +258,84 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
+
+            <!-- Nexus staging plugin for Sonatype deployment -->
+            <plugin>
+                <groupId>org.sonatype.plugins</groupId>
+                <artifactId>nexus-staging-maven-plugin</artifactId>
+                <version>${nexus-staging-maven-plugin}</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <serverId>ossrh</serverId>
+                    <nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
+                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                </configuration>
+            </plugin>
+
+            <!-- Generate source jar file -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-source-plugin</artifactId>
+                <version>${maven.source.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-sources</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Generate JavaDoc jar file -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-javadoc-plugin</artifactId>
+                <version>${maven.javadoc.version}</version>
+                <executions>
+                    <execution>
+                        <id>attach-javadocs</id>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Signs deployed jar, source jar, and JavaDoc jar with GPG -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-gpg-plugin</artifactId>
+                <version>${maven.gpg.version}</version>
+                <executions>
+                    <execution>
+                        <id>sign-artifacts</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>sign</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Allows "release" mvn goal to deploy a SNAPSHOT or version release to Sonatype -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-release-plugin</artifactId>
+                <version>${maven.release.version}</version>
+                <configuration>
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <useReleaseProfile>false</useReleaseProfile>
+                    <releaseProfiles>release</releaseProfiles>
+                    <goals>deploy</goals>
+                </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>tidy-maven-plugin</artifactId>
+                <version>1.0-beta-1</version>
+            </plugin>
         </plugins>
     </build>
-
 </project>
