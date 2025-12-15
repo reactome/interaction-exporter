@@ -78,7 +78,10 @@ pipeline{
 
 					sh """
 						docker run \\
+						--rm \\
 						-v ${pwd()}/${env.OUTPUT_FOLDER}:${CONT_ROOT}/${env.OUTPUT_FOLDER}/ \\
+						-v \$HOME/.aws:/root/.aws:ro \\
+						-e AWS_REGION=us-east-1 \\
 						--net=host \\
 						--name ${CONT_NAME}_verifier \\
 						${ECR_URL}:latest \\
