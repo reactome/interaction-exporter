@@ -46,17 +46,66 @@ pipeline{
 					withCredentials([usernamePassword(credentialsId: 'neo4jUsernamePassword', passwordVariable: 'pass', usernameVariable: 'user')]){
 						// Default behaviour is to run interactions on Human data
 						sh """\
-							docker run --rm -v \$(pwd)/logs:${CONT_ROOT}/logs -v \$(pwd)/${env.OUTPUT_FOLDER}:${CONT_ROOT}/${env.OUTPUT_FOLDER} --net=host --name ${CONT_NAME} ${ECR_URL}:latest /bin/bash -c 'java -Xmx${env.JAVA_MEM_MAX}m -jar target/interaction-exporter-exec.jar --user $user --password $pass --output ./${env.OUTPUT_FOLDER}/reactome.homo_sapiens.interactions --verbose'
+							docker run \\
+							--rm \\
+							-v \$(pwd)/logs:${CONT_ROOT}/logs \\
+							-v \$(pwd)/${env.OUTPUT_FOLDER}:${CONT_ROOT}/${env.OUTPUT_FOLDER} \\
+							--net=host \\
+							--name ${CONT_NAME}_exec ${ECR_URL}:latest \\
+							/bin/bash -c 'java -Xmx${env.JAVA_MEM_MAX}m -jar target/interaction-exporter-exec.jar --user $user --password $pass --output ./${env.OUTPUT_FOLDER}/reactome.homo_sapiens.interactions --verbose'
 						"""
 
 						// Specify to generate interactions data for all species
 						sh """\
-							docker run --rm -v \$(pwd)/logs:${CONT_ROOT}/logs -v \$(pwd)/${env.OUTPUT_FOLDER}:${CONT_ROOT}/${env.OUTPUT_FOLDER} --net=host --name ${CONT_NAME} ${ECR_URL}:latest /bin/bash -c 'java -Xmx${env.JAVA_MEM_MAX}m -jar target/interaction-exporter-exec.jar --user $user --password $pass --output ./${env.OUTPUT_FOLDER}/reactome.all_species.interactions --species ALL --verbose'
+							docker run \\
+							--rm \\
+							-v \$(pwd)/logs:${CONT_ROOT}/logs \\
+							-v \$(pwd)/${env.OUTPUT_FOLDER}:${CONT_ROOT}/${env.OUTPUT_FOLDER} \\
+							--net=host \\
+							--name ${CONT_NAME}_exec ${ECR_URL}:latest \\
+							/bin/bash -c 'java -Xmx${env.JAVA_MEM_MAX}m -jar target/interaction-exporter-exec.jar --user $user --password $pass --output ./${env.OUTPUT_FOLDER}/reactome.all_species.interactions --species ALL --verbose'
 						"""
 					}
 				}
 			}
 		}
+
+		// Execute the verifier jar file checking for the existence and proper file sizes of the interactors output
+		stage('Post: Verify InteractionExporter ran correctly') {
+			steps {
+				script {
+					def releaseVersion = utils.getReleaseVersion()
+
+					sh """
+						docker run \\
+						--rm \\
+						-v ${pwd()}/${env.OUTPUT_FOLDER}:${CONT_ROOT}/${env.OUTPUT_FOLDER}/ \\
+						-v \$HOME/.aws:/root/.aws:ro \\
+						-e AWS_REGION=us-east-1 \\
+						--net=host \\
+						--name ${CONT_NAME}_verifier \\
+						${ECR_URL}:latest \\
+						/bin/bash -c "java -jar target/interaction-exporter-verifier.jar --releaseNumber ${releaseVersion} --output ${env.OUTPUT_FOLDER}"
+					"""
+				}
+			}
+		}
+
+		// Creates a list of files and their sizes to use for comparison baseline during next release
+		stage('Post: Create files and sizes list to upload for next release\'s verifier') {
+			steps {
+				script {
+					def fileSizeList = "files_and_sizes.txt"
+					def releaseVersion = utils.getReleaseVersion()
+
+					sh "find ${env.OUTPUT_FOLDER} -type f -printf \"%s\t%P\n\" > ${fileSizeList}"
+					sh "aws s3 --no-progress cp ${fileSizeList} s3://reactome/private/releases/${releaseVersion}/interactions_exporter/data/"
+					sh "rm ${fileSizeList}"
+				}
+			}
+		}
+
+
 		// Entire folder must be copied to the download folder.
 		stage('Post: Copy interactors folder to download folder'){
 			steps{
