@@ -85,7 +85,7 @@ pipeline{
 						--net=host \\
 						--name ${CONT_NAME}_verifier \\
 						${ECR_URL}:latest \\
-						/bin/bash -c "java -jar target/interaction-exporter-verifier.jar --releaseNumber ${releaseVersion} --output ${env.OUTPUT_FOLDER}"
+						/bin/bash -c "java -jar target/interaction-exporter-verifier.jar --releaseNumber ${releaseVersion} --output ${CONT_ROOT}/${env.OUTPUT_FOLDER}"
 					"""
 				}
 			}
